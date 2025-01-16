@@ -45,6 +45,7 @@ class Face:
     stream = BytesIO(data)
 
     self.opcode = self.read_uint32(stream)
+    print(self.opcode)
     
     __unknown = self.read_uint32(stream)
     

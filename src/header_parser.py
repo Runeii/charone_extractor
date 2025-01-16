@@ -4,7 +4,7 @@ from typing import List, Tuple
 import logging
 from io import BytesIO
 
-class CharacterFileParser:
+class HeaderParser:
   def __init__(self, debug: bool = False):
       self.logger = logging.getLogger(__name__)
       if debug:
@@ -38,7 +38,7 @@ class CharacterFileParser:
       self.logger.debug(f"Model count: {model_count}")
       
       # Process each model section
-      for i in range(7):
+      for i in range(model_count):
           model = {}
           
           model_offset = self.read_uint32(stream)
@@ -77,6 +77,7 @@ class CharacterFileParser:
 
           model['id'] = model_id
           model['name'] = model_name
+          model['is_main_field_model'] = is_main_field_model
           model['model_offset'] = model_offset
           model['tim_offsets'] = tim_offsets
           model['data_offset'] = model_data_offset

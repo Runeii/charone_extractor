@@ -9,12 +9,23 @@ from .unknown_data_object import UnknownDataObject
 from .texture_animation import TextureAnimation
 from io import BytesIO
 
+@dataclass
 class ModelData:
+  name: str
+  data: bytes
+  offset: int
+  bones: List[Bone] = None
+  texture_animations: List[TextureAnimation] = None
+  faces: List[Face] = None
+  vertices: List[Vertex] = None
+  skin_objects: List[SkinObject] = None
+  unknown_data_objects: List[UnknownDataObject] = None
+
   def __init__(self, name: str, data: bytes, offset: int):
-      self.name = name
-      self.data = data
-      self.offset = offset
-      self.parse()
+    self.name = name
+    self.data = data
+    self.offset = offset
+    self.parse()
 
   @staticmethod
   def read_uint32(stream: BytesIO) -> int:
@@ -53,12 +64,14 @@ class ModelData:
 
     __unknown2 = self.read_uint32(stream)
 
-    bones = self.parse_bones(number_of_bones, offset_of_bones)
-    texture_animations = self.parse_texture_animations(number_of_texture_animations, offset_of_texture_animations)
-    faces = self.parse_faces(number_of_faces, offset_of_faces)
-    vertices = self.parse_vertices(number_of_vertices, offset_of_vertices)
-    skin_objects = self.parse_skin_objects(number_of_skin_objects, offset_of_skin_objects)
-    unknown_data_objects = self.parse_unknown_data_objects(number_of_unknown_data_objects, offset_of_unknown_data_objects)
+    self.bones = self.parse_bones(number_of_bones, offset_of_bones)
+    self.texture_animations = self.parse_texture_animations(number_of_texture_animations, offset_of_texture_animations)
+    self.faces = self.parse_faces(number_of_faces, offset_of_faces)
+    self.vertices = self.parse_vertices(number_of_vertices, offset_of_vertices)
+    self.skin_objects = self.parse_skin_objects(number_of_skin_objects, offset_of_skin_objects)
+    self.unknown_data_objects = self.parse_unknown_data_objects(number_of_unknown_data_objects, offset_of_unknown_data_objects)
+
+    print(offset_of_skin_objects, self.unknown_data_objects[0].start_skinobject_index + offset_of_skin_objects)
   
   def parse_bones(self, number_of_bones: int, offset_of_bones: int):
     stream = BytesIO(self.data[offset_of_bones:])
@@ -107,7 +120,6 @@ class ModelData:
       skin_object_data = stream.read(64)
       skin_object = SkinObject(skin_object_data)
       skin_objects.append(skin_object)
-      print(skin_object)
     
     return skin_objects
 
@@ -118,6 +130,5 @@ class ModelData:
       unknown_data_object_data = stream.read(32)
       unknown_data_object = UnknownDataObject(unknown_data_object_data)
       unknown_data_objects.append(unknown_data_object)
-      print(unknown_data_object)
     
     return unknown_data_objects
