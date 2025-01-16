@@ -35,7 +35,6 @@ class SanitisedBone:
 
     self.parent_bone = self.parent_bone - 1
     self.deconstruct_unknown_data(bone.unknown_data)
-    print(self.transform_matrix)
 
   def sanitise_parent_bone(self):
     self.parent_bone = self.parent_bone - 1

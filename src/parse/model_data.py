@@ -51,16 +51,19 @@ class ModelData:
 
     __unknown = self.read_uint32(stream)
 
-    triangle_count = self.read_uint32(stream)
-    quad_count = self.read_uint32(stream)
-    
-    offset_of_bones = self.read_uint32(stream)
-    offset_of_vertices = self.read_uint32(stream)
-    offset_of_texture_animations = self.read_uint32(stream)
-    offset_of_faces = self.read_uint32(stream)
-    offset_of_unknown_data_objects = self.read_uint32(stream)
-    offset_of_skin_objects = self.read_uint32(stream)
-    offset_of_animation_data = self.read_uint32(stream)
+    triangle_count = self.read_uint16(stream)
+    quad_count = self.read_uint16(stream)
+
+    if triangle_count + quad_count != number_of_faces:
+      raise ValueError("Triangle and quad counts do not match total face count")
+  
+    offset_of_bones = self.read_uint32(stream) + self.offset
+    offset_of_vertices = self.read_uint32(stream) + self.offset
+    offset_of_texture_animations = self.read_uint32(stream) + self.offset
+    offset_of_faces = self.read_uint32(stream) + self.offset
+    offset_of_unknown_data_objects = self.read_uint32(stream) + self.offset
+    offset_of_skin_objects = self.read_uint32(stream) + self.offset
+    offset_of_animation_data = self.read_uint32(stream) + self.offset
 
     __unknown2 = self.read_uint32(stream)
 
@@ -70,8 +73,6 @@ class ModelData:
     self.vertices = self.parse_vertices(number_of_vertices, offset_of_vertices)
     self.skin_objects = self.parse_skin_objects(number_of_skin_objects, offset_of_skin_objects)
     self.unknown_data_objects = self.parse_unknown_data_objects(number_of_unknown_data_objects, offset_of_unknown_data_objects)
-
-    print(offset_of_skin_objects, self.unknown_data_objects[0].start_skinobject_index + offset_of_skin_objects)
   
   def parse_bones(self, number_of_bones: int, offset_of_bones: int):
     stream = BytesIO(self.data[offset_of_bones:])
@@ -95,6 +96,7 @@ class ModelData:
   
   def parse_faces(self, number_of_faces: int, offset_of_faces: int):
     stream = BytesIO(self.data[offset_of_faces:])
+
     faces = []
     for i in range(number_of_faces):
       face_data = stream.read(64)

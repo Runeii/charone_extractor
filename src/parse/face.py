@@ -45,7 +45,6 @@ class Face:
     stream = BytesIO(data)
 
     self.opcode = self.read_uint32(stream)
-    print(self.opcode)
     
     __unknown = self.read_uint32(stream)
     
@@ -83,8 +82,9 @@ class Face:
       
   @property
   def is_quad(self) -> bool:
-      return self.opcode == 0x0907012d
+      return self.opcode == 0x2d010709
       
   @property 
   def is_triangle(self) -> bool:
-      return self.opcode == 0x07060125
+      return self.opcode == 0x25010607
+  
