@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 from io import BytesIO
 import struct
@@ -17,22 +17,24 @@ class UnknownDataObject:
   - quad_count (2 bytes): UINT16 - number of quads
   - unknown2 (8 bytes): 8 bytes of additional unknown data
   """
-  start_skinobject_index: int
-  skinobject_count: int
-  start_triangle_index: int
-  triangle_count: int
-  start_quad_index: int
-  quad_count: int
-  unknown: List[int]
-  unknown2: List[int]
+  data: bytes
+
+  start_skinobject_index: int = field(init=None)
+  skinobject_count: int = field(init=None)
+  start_triangle_index: int = field(init=None)
+  triangle_count: int = field(init=None)
+  start_quad_index: int = field(init=None)
+  quad_count: int = field(init=None)
+  unknown: List[int] = field(init=None)
+  unknown2: List[int] = field(init=None)
 
   @staticmethod
   def read_uint16(stream: BytesIO) -> int:
     return struct.unpack("<H", stream.read(2))[0]
 
-  def __init__(self, data: bytes):
-    assert len(data) == 32, f"UnknownData must be 32 bytes, got {len(data)}"
-    stream = BytesIO(data)
+  def __post_init__(self):
+    assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
+    stream = BytesIO(self.data)
 
     self.start_skinobject_index = self.read_uint16(stream)
     self.skinobject_count = self.read_uint16(stream)

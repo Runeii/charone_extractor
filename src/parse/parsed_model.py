@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from .tim import TIM
 from .model_data import ModelData
 
@@ -6,24 +6,23 @@ from .model_data import ModelData
 class ParsedModel:
   id: int
   name: str
-  tim_offset: int
+  tim_offsets: list[int]
   model_offset: int
   data_offset: int
   data: bytes
-  tim: TIM = None
 
-  def __init__(self, id: int, name: str, model_offset: int, tim_offsets: int, data_offset: int, data: bytes):
-    self.id = id
-    self.name = name.replace('HXh', '')
-    self.tim_offset = tim_offsets[0] if tim_offsets else False
-    self.model_offset = model_offset
-    self.data_offset = data_offset
-    self.data = data
+  tim_offset: int = field(init=None)
+  model_data: ModelData = field(init=None)
+  tim: TIM = field(init=None)
+
+  def __post_init__(self):
+    self.name = self.name.replace('HXh', '')
 
     self.model_data = ModelData(self.name, self.data, self.model_offset + self.data_offset + 4)
 
     # Note: need to +4 for PC files
-    self.tim = TIM(self.name, self.data[self.model_offset + self.tim_offset + 4:]) if self.tim_offset is not None else None
+    tim_offset = self.tim_offsets[0] if self.tim_offsets else None
+    self.tim = TIM(self.name, self.data[self.model_offset + tim_offset + 4:]) if tim_offset is not None else None
 
   def __str__(self):
     return (

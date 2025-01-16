@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 from io import BytesIO
 import struct
@@ -11,13 +11,12 @@ class SanitisedBone:
   - transform_matrix (48 bytes): 3x4 matrix of floats
   - extra_data (6 bytes): 3 shorts
   """
-  parent_bone: int
-  bone_length: int
-  unknown1: int
-  unknown2: int
+  bone: Bone
 
-  transform_matrix: List[List[float]]
-  extra_data: List[int]
+  parent_bone: int = field(init=False)
+
+  transform_matrix: List[List[float]] = field(init=False)
+  extra_data: List[int] = field(init=False)
 
   @staticmethod
   def read_uint32(stream: BytesIO) -> int:
@@ -27,14 +26,9 @@ class SanitisedBone:
   def read_int16(stream: BytesIO) -> int:
     return struct.unpack("<h", stream.read(2))[0]
 
-  def __init__(self, bone: Bone):
-    self.parent_bone = bone.parent_bone
-    self.unknown1 = bone.unknown1
-    self.unknown2 = bone.unknown2
-    self.bone_length = bone.bone_length
-
-    self.parent_bone = self.parent_bone - 1
-    self.deconstruct_unknown_data(bone.unknown_data)
+  def __post_init__(self):
+    self.parent_bone = self.bone.parent_bone - 1
+    self.deconstruct_unknown_data(self.bone.unknown_data)
 
   def sanitise_parent_bone(self):
     self.parent_bone = self.parent_bone - 1

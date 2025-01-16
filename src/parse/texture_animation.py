@@ -38,9 +38,9 @@ class TextureAnimation:
         TextureAnimation.read_uint8(stream)
     )
 
-  def __init__(self, data: bytes):
-    assert len(data) == 64, f"TextureAnimation must be 10 bytes, got {len(data)}"
-    stream = BytesIO(data)
+  def __post_init__(self):
+    assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
+    stream = BytesIO(self.data)
 
     # Read initial bytes
     self.unknown1 = self.read_uint8(stream)

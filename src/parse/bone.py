@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
 from io import BytesIO
 import struct
@@ -14,11 +14,13 @@ class Bone:
   - bone_length (2 bytes): SHORT - length of bone (needs special handling for negative values)
   - unknown_data (54 bytes): 54 bytes - unknown values
   """
-  parent_bone: int
-  bone_length: int
-  unknown1: int
-  unknown2: int
-  unknown_data: bytes
+  data: bytes
+
+  parent_bone: int = field(init=None)
+  bone_length: int = field(init=None)
+  unknown1: int = field(init=None)
+  unknown2: int = field(init=None)
+  unknown_data: bytes = field(init=None)
 
   @staticmethod
   def read_uint32(stream: BytesIO) -> int:
@@ -32,9 +34,9 @@ class Bone:
   def read_int16(stream: BytesIO) -> int:
     return struct.unpack("<h", stream.read(2))[0]
 
-  def __init__(self, data: bytes):
-    assert len(data) == 64, f"Bone must be 64 bytes, got {len(data)}"
-    stream = BytesIO(data)
+  def __post_init__(self):
+    assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
+    stream = BytesIO(self.data)
 
     self.parent_bone = self.read_int16(stream)
 

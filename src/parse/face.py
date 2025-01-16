@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
 from io import BytesIO
 import struct
@@ -20,13 +20,15 @@ class Face:
   - texture_index (2 bytes): texture group/index
   - padding2 (8 bytes): unused
   """
-  opcode: int
-  vertices: List[int]  # 4 vertex IDs
-  edge_data: List[int]  # 4 edge values
-  vertex_colors: List[int]  # 4 color values
-  texture_coords: List[Tuple[int, int]]  # 4 uv pairs
-  texture_index: int
-  unknown_flags: int  # Contains semitransparency bit
+  data: bytes
+
+  opcode: int = field(init=None)
+  vertices: List[int] = field(init=None)
+  edge_data: List[int] = field(init=None)
+  vertex_colors: List[int] = field(init=None)
+  texture_coords: List[Tuple[int, int]] = field(init=None)
+  texture_index: int = field(init=None)
+  unknown_flags: int = field(init=None)
 
   @staticmethod
   def read_uint32(stream: BytesIO) -> int:
@@ -40,9 +42,9 @@ class Face:
   def read_uint8(stream: BytesIO) -> int:
       return struct.unpack("<B", stream.read(1))[0]
 
-  def __init__(self, data: bytes):
-    assert len(data) == 64, f"Face must be 64 bytes, got {len(data)}"
-    stream = BytesIO(data)
+  def __post_init__(self):
+    assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
+    stream = BytesIO(self.data)
 
     self.opcode = self.read_uint32(stream)
     

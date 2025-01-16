@@ -1,5 +1,5 @@
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 from .face import Face
 from .bone import Bone
@@ -14,17 +14,15 @@ class ModelData:
   name: str
   data: bytes
   offset: int
-  bones: List[Bone] = None
-  texture_animations: List[TextureAnimation] = None
-  faces: List[Face] = None
-  vertices: List[Vertex] = None
-  skin_objects: List[SkinObject] = None
-  unknown_data_objects: List[UnknownDataObject] = None
 
-  def __init__(self, name: str, data: bytes, offset: int):
-    self.name = name
-    self.data = data
-    self.offset = offset
+  bones: List[Bone] = field(init=None)
+  texture_animations: List[TextureAnimation] = field(init=None)
+  faces: List[Face] = field(init=None)
+  vertices: List[Vertex] = field(init=None)
+  skin_objects: List[SkinObject] = field(init=None)
+  unknown_data_objects: List[UnknownDataObject] = field(init=None)
+
+  def __post_init__(self):
     self.parse()
 
   @staticmethod

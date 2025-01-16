@@ -1,5 +1,5 @@
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple, Optional
 import logging
 from io import BytesIO
@@ -15,20 +15,30 @@ class TIMHeader:
     img_y: int
     img_w: int
     img_h: int
-    pal_size: Optional[int] = None
-    pal_x: Optional[int] = None
-    pal_y: Optional[int] = None
-    pal_w: Optional[int] = None
-    pal_h: Optional[int] = None
-    nb_pal: Optional[int] = None
+    pal_size: Optional[int]
+    pal_x: Optional[int]
+    pal_y: Optional[int]
+    pal_w: Optional[int]
+    pal_h: Optional[int]
+    nb_pal: Optional[int]
 
+
+
+@dataclass
 class TIM:
+    name: str
+    data: bytes
+
+    stream: BytesIO = field(init=None)
+    header: Optional[TIMHeader] = field(init=None)
+    image_data: Optional[bytes] = field(init=None)
+    palette_data: Optional[bytes] = field(init=None)
+
+
     MAGIC_NUMBER = b'\x10\x00\x00\x00'
     
-    def __init__(self, name: str, data: bytes):
-        self.name = name
-        self.data = data
-        self.stream = BytesIO(data)
+    def __post_init__(self):
+        self.stream = BytesIO(self.data)
         self.header: Optional[TIMHeader] = None
         self.image_data: Optional[bytes] = None
         self.palette_data: Optional[bytes] = None

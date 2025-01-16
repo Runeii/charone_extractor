@@ -1,14 +1,17 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
 import math
 
 @dataclass
 class UV:
   """Matches the UV format from first implementation with coordinate transformations"""
-  u: int
-  v: int
-  texture_group: List[int]
+  coords: Tuple[int, int]
+  texture_index: int
 
+  u: int = field(init=False)
+  v: int = field(init=False)
+
+  @staticmethod
   def get_texture_offsets(index: int) -> list[int]:
       """Get texture offsets as [horizontal_multiplier, vertical_multiplier]
       
@@ -18,13 +21,12 @@ class UV:
       """
       return [math.floor(index/2), index % 2]
 
-  @classmethod
-  def __init__(self, coords: Tuple[int, int], texture_index: int):
+  def __post_init__(self):
     """Creates UV from raw coordinates and applies transformations"""
-    u, v = coords
+    u, v = self.coords
 
     # Get texture group offsets
-    [tgroup_x, tgroup_y] = self.get_texture_offsets(texture_index)
+    [tgroup_x, tgroup_y] = self.get_texture_offsets(self.texture_index)
     
     # Apply transformations:
     # 1. Invert V coordinate (128-v)
@@ -34,5 +36,8 @@ class UV:
     u = u + (tgroup_x * 128)
     v = v + (tgroup_y * 128)
 
-    self.u = u
-    self.v = v
+    self.u = int(u)
+    self.v = int(v)
+  
+  def __repr__(self):
+      return f"UV[{int(self.u)}, {int(self.v)}]"

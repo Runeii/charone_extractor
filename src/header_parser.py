@@ -5,17 +5,10 @@ import logging
 from io import BytesIO
 
 class HeaderParser:
-  def __init__(self, debug: bool = False):
-      self.logger = logging.getLogger(__name__)
-      if debug:
-          logging.basicConfig(level=logging.DEBUG)
-      else:
-          logging.basicConfig(level=logging.WARNING)
-  
   def read_uint32(self, stream: BytesIO) -> int:
       """Read a 32-bit unsigned integer from the stream"""
       value = struct.unpack("<I", stream.read(4))[0]
-      #self.logger.debug(f"Read uint32 at offset 0x{stream.tell()-4:04X}: 0x{value:08X}")
+      #print(f"Read uint32 at offset 0x{stream.tell()-4:04X}: 0x{value:08X}")
       return value
   
 
@@ -27,7 +20,7 @@ class HeaderParser:
 
   def parse_headers(self, file_data: bytes):
       if len(file_data) < 0x800:
-          self.logger.error(f"File too short: {len(file_data)} bytes")
+          print(f"File too short: {len(file_data)} bytes")
           return []
 
       stream = BytesIO(file_data)
@@ -35,7 +28,7 @@ class HeaderParser:
       
       # Read model count
       model_count = self.read_uint32(stream)
-      self.logger.debug(f"Model count: {model_count}")
+      print(f"Model count: {model_count}")
       
       # Process each model section
       for i in range(model_count):
@@ -55,7 +48,7 @@ class HeaderParser:
               # For main field models, read another model ID which should be 0
               main_field_zero_id = self.read_uint32(stream)
               if main_field_zero_id != 0:
-                  self.logger.error(f"Expected 0x00000000 after main field model ID, got 0x{main_field_zero_id:08X}")
+                  print(f"Expected 0x00000000 after main field model ID, got 0x{main_field_zero_id:08X}")
 
           else:
               # Read tim offsets until we hit 0xFFFFFFFF

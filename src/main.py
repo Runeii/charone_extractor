@@ -6,7 +6,7 @@ def main():
   with open("chara.one", "rb") as f:
     file_data = f.read()
   
-  parser = HeaderParser(debug=True)
+  parser = HeaderParser()
   headers = parser.parse_headers(file_data)
   
   print(f"\nFound {len(headers)} models:")

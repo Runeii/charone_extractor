@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 from ..parse.parsed_model import ParsedModel
 from ..parse.tim import TIM
@@ -15,31 +15,34 @@ from .sanitised_bone import SanitisedBone
 
 @dataclass
 class SanitisedModel:
-  id: int
-  name: str
-  tim: TIM = None
-  bones: List[Bone] = None
-  texture_animations: List[TextureAnimation] = None
-  faces: List[Face] = None
-  vertices: List[Vertex] = None
-  skin_objects: List[SkinObject] = None
-  unknown_data_objects: List[UnknownDataObject] = None
+  model: ParsedModel
 
-  sanitised_faces: List[SanitisedFace] = None
-  uvs: List[UV] = None
+  id: int = field(init=None)
+  name: str = field(init=None)
+  tim: TIM = field(init=None)
+  bones: List[Bone] = field(init=None)
+  texture_animations: List[TextureAnimation] = field(init=None)
+  faces: List[Face] = field(init=None)
+  vertices: List[Vertex] = field(init=None)
+  skin_objects: List[SkinObject] = field(init=None)
+  unknown_data_objects: List[UnknownDataObject] = field(init=None)
 
-  def __init__(self, model: ParsedModel):
-    self.id = model.id
-    self.name = model.name
+  sanitised_faces: List[SanitisedFace] = field(init=None)
+  uvs: List[UV] = field(init=None)
 
-    self.tim = model.tim
+  def __post_init__(self):
+    self.id = self.model.id
+    self.name = self.model.name
 
-    self.bones = model.model_data.bones
-    self.texture_animations = model.model_data.texture_animations
-    self.faces = model.model_data.faces
-    self.vertices = model.model_data.vertices
-    self.skin_objects = model.model_data.skin_objects
-    self.unknown_data_objects = model.model_data.unknown_data_objects
+    self.tim = self.model.tim
+    self.tim.save(f"output/{self.name}.png")
+
+    self.bones = self.model.model_data.bones
+    self.texture_animations = self.model.model_data.texture_animations
+    self.faces = self.model.model_data.faces
+    self.vertices = self.model.model_data.vertices
+    self.skin_objects = self.model.model_data.skin_objects
+    self.unknown_data_objects = self.model.model_data.unknown_data_objects
 
     self.sanitise_bones()
     self.sanitise_vertices()
@@ -76,8 +79,8 @@ class SanitisedModel:
 
 
   def sanitise_faces(self):
-    sanitised_faces = []
-    uvs = []
+    sanitised_faces: List[Face] = []
+    uvs: List[UV] = []
     
     for face in self.faces:
       sanitised_face = SanitisedFace(face)
@@ -85,11 +88,12 @@ class SanitisedModel:
 
       # Convert UVs - 4 per face
       for coords in face.texture_coords:
-        uvs.append(UV(coords, face.texture_index))
-
-            
+        uv = UV(coords, face.texture_index)
+        uvs.append(uv)
+        
     self.sanitised_faces = sanitised_faces
     self.uvs = uvs
+
 
 
   def __str__(self):
