@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List
 from io import BytesIO
 import struct
-from ..parse.bone import Bone
+from ..parse.model.bone import Bone
 
 @dataclass
 class SanitisedBone:

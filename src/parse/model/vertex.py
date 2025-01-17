@@ -3,7 +3,6 @@ from typing import List, Tuple
 from io import BytesIO
 import struct
 
-MAX_SIZE = 4096
 @dataclass
 class Vertex:
   """A vertex in the MCH format.

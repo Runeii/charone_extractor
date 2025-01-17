@@ -18,8 +18,8 @@ class Bone:
 
   parent_bone: int = field(init=None)
   bone_length: int = field(init=None)
-  unknown1: int = field(init=None)
-  unknown2: int = field(init=None)
+  parent_bone_offset: int = field(init=None) # wiki needs update: this is parent bone offset! (so multiple of 64)
+  unknown2: int = field(init=None) # always 0x0 / 0?
   unknown_data: bytes = field(init=None)
 
   @staticmethod
@@ -36,16 +36,17 @@ class Bone:
 
   def __post_init__(self):
     assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
+    
     stream = BytesIO(self.data)
 
     self.parent_bone = self.read_int16(stream)
 
-    self.unknown1 = self.read_uint16(stream)
+    self.parent_bone_offset = self.read_uint16(stream)
     self.unknown2 = self.read_uint32(stream)
     
     self.bone_length = self.read_int16(stream) # wiki incorrectly states this is uint16
 
-    self.unknown_data = stream.read(54)
+    self.unknown_data = stream.read()
 
   def __repr__(self):
       return f"Bone(parent={self.parent_bone}, length={self.bone_length}, unknown_data={self.unknown_data})"

@@ -33,5 +33,5 @@ class SkinObject:
     stream.read(2)
 
   def __repr__(self):
-    return (f"vFirst:{self.first_vertex_index} "
-            f"vCount:{self.vertex_count} bone:{self.bone_id} ")
+    return (f"first_vertex_index:{self.first_vertex_index} "
+            f"vertex_count:{self.vertex_count} bone_id:{self.bone_id} ")

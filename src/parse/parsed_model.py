@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
-from .tim import TIM
-from .model_data import ModelData
+from .model.tim import TIM
+from .model.model_data import ModelData
 
 @dataclass
 class ParsedModel:

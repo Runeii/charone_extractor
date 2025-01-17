@@ -1,6 +1,7 @@
 from .header_parser import HeaderParser
 from .parse.parsed_model import ParsedModel
 from .sanitise.sanitised_model import SanitisedModel
+from .export.exporter import Exporter
 
 def main():
   with open("chara.one", "rb") as f:
@@ -17,7 +18,9 @@ def main():
 
     model = ParsedModel(name=model['name'], id=model['id'], model_offset=model['model_offset'], tim_offsets=model['tim_offsets'], data_offset=model['data_offset'], data=file_data)
     sanitised_model = SanitisedModel(model=model);
-    print(sanitised_model)
+
+    #exporter = Exporter(name=model.name, model=sanitised_model)
+    #exporter.export_as_obj('./output.obj')
 
 if __name__ == "__main__":
     main()

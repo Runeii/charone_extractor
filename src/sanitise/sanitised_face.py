@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from ..parse.face import Face
+from ..parse.model.face import Face
 
 @dataclass
 class SanitisedFace:

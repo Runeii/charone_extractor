@@ -11,16 +11,6 @@ class UV:
   u: int = field(init=False)
   v: int = field(init=False)
 
-  @staticmethod
-  def get_texture_offsets(index: int) -> list[int]:
-      """Get texture offsets as [horizontal_multiplier, vertical_multiplier]
-      
-      Converts texture index into grid coordinates:
-      - horizontal_multiplier = number of columns (floor division by 2)
-      - vertical_multiplier = whether in top or bottom row (0 or 1)
-      """
-      return [math.floor(index/2), index % 2]
-
   def __post_init__(self):
     """Creates UV from raw coordinates and applies transformations"""
     u, v = self.coords
@@ -39,5 +29,15 @@ class UV:
     self.u = int(u)
     self.v = int(v)
   
+  @staticmethod
+  def get_texture_offsets(index: int) -> list[int]:
+      """Get texture offsets as [horizontal_multiplier, vertical_multiplier]
+      
+      Converts texture index into grid coordinates:
+      - horizontal_multiplier = number of columns (floor division by 2)
+      - vertical_multiplier = whether in top or bottom row (0 or 1)
+      """
+      return [math.floor(index/2), index % 2]
+
   def __repr__(self):
       return f"UV[{int(self.u)}, {int(self.v)}]"
