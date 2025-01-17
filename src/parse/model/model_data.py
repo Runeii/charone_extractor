@@ -8,7 +8,7 @@ from .skin_object import SkinObject
 from .unknown_data_object import UnknownDataObject
 from .texture_animation import TextureAnimation
 from io import BytesIO
-from ..parsed_animation import Animation
+from ..animation.animations_parser import AnimationsParser
 
 @dataclass
 class ModelData:
@@ -72,7 +72,8 @@ class ModelData:
     self.vertices = self.parse_vertices(number_of_vertices, offset_of_vertices)
     self.skin_objects = self.parse_skin_objects(number_of_skin_objects, offset_of_skin_objects)
     self.unknown_data_objects = self.parse_unknown_data_objects(number_of_unknown_data_objects, offset_of_unknown_data_objects)
-    self.animations = self.parse_animations(1, offset_of_animation_data)
+    
+    self.animations = AnimationsParser(self.name, self.data[offset_of_animation_data:])
 
   def parse_bones(self, number_of_bones: int, offset_of_bones: int):
     stream = BytesIO(self.data[offset_of_bones:])
@@ -134,29 +135,3 @@ class ModelData:
       unknown_data_objects.append(unknown_data_object)
     
     return unknown_data_objects
-
-  def parse_animations(self, number_of_animations: int, offset_of_animations: int):
-    test_stream = BytesIO(self.data[offset_of_animations:])
-    test_data = test_stream.read()
-    last_zeroes = []
-    total = 0
-    for i, val in enumerate(test_data):
-      if val != 0:
-        if len(last_zeroes) > 3:
-          print("Padding", len(last_zeroes), last_zeroes, "at index", i)
-        if len(last_zeroes) == 9:
-          print("divider")
-          total += 1
-        last_zeroes = []
-        continue
-      last_zeroes.append(val)
-    print("Final count", total)
-
-    stream = BytesIO(self.data[offset_of_animations:])
-    animations = []
-    for i in range(35):
-      animation_data = stream.read(8)
-      animation = Animation(animation_data)
-      animations.append(animation)
-    return animations
-

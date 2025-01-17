@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
 from io import BytesIO
 import struct
@@ -17,14 +17,14 @@ class TextureAnimation:
   - original_area_coords (Tuple[int, int]): original UV coordinates
   - replacement_coords (List[Tuple[int, int]]): list of replacement UV coordinates
   """
-  unknown1: int
-  total_textures: int
-  unknown2: int
-  u_size: int
-  v_size: int
-  replacement_section_count: int
-  original_area_coords: Tuple[int, int]
-  replacement_coords: List[Tuple[int, int]]
+  unknown1: int = field(init=None)
+  total_textures: int = field(init=None)
+  unknown2: int = field(init=None)
+  u_size: int = field(init=None)
+  v_size: int = field(init=None)
+  replacement_section_count: int = field(init=None)
+  original_area_coords: Tuple[int, int] = field(init=None)
+  replacement_coords: List[Tuple[int, int]] = field(init=None)
 
   @staticmethod
   def read_uint8(stream: BytesIO) -> int:

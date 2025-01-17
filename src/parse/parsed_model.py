@@ -19,7 +19,6 @@ class ParsedModel:
     self.name = self.name.replace('HXh', '')
 
     self.model_data = ModelData(self.name, self.data, self.model_offset + self.data_offset + 4)
-
     # Note: need to +4 for PC files
     tim_offset = self.tim_offsets[0] if self.tim_offsets else None
     self.tim = TIM(self.name, self.data[self.model_offset + tim_offset + 4:]) if tim_offset is not None else None
