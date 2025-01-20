@@ -1,26 +1,21 @@
-from .header_parser import HeaderParser
-from .parse.parsed_model import ParsedModel
-from .sanitise.sanitised_model import SanitisedModel
-from .export.exporter import Exporter
+from .parse.headers.__parser import HeaderParser
+from .parse.model.__parser import ModelParser
 
 def main():
   with open("chara.one", "rb") as f:
     file_data = f.read()
-  
-  parser = HeaderParser()
-  headers = parser.parse_headers(file_data)
-  
-  for model in headers:
-    if model['is_main_field_model']:
-      #print(f"Skipping main field model {model['name']}")
+
+  model_headers = HeaderParser(file_data)
+  print(f"Found {model_headers.model_count} models")
+
+  for model_header in model_headers:
+    if model_header['is_main_field_model']:
+      print(f"Skipping main field model {model_header['name']}")
       continue
 
-    print(f"Processing model {model['name']}")
-    model = ParsedModel(name=model['name'], id=model['id'], model_offset=model['model_offset'], tim_offsets=model['tim_offsets'], data_offset=model['data_offset'], data=file_data)
-    sanitised_model = SanitisedModel(model=model);
-
-    #exporter = Exporter(name=model.name, model=sanitised_model)
-    #exporter.export_as_obj('./output.obj')
+    print(f"Processing model {model_header['name']}")
+    model = ModelParser(header=model_header, data=file_data)
+    print(f"Model {model.name} parsed successfully")    
 
 if __name__ == "__main__":
     main()

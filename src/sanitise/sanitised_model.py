@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List
-from ..parse.parsed_model import ParsedModel
+from ..parse.model.__parser import ParsedModel
 from ..parse.model.tim import TIM
 from ..parse.model.bone import Bone
 from ..parse.model.texture_animation import TextureAnimation
@@ -14,6 +14,9 @@ from .uv import UV
 from .sanitised_bone import SanitisedBone
 from .sanitised_vertex import SanitisedVertex
 from .bone_indices import BoneIndices
+
+from ..parse.m import Animation as ParsedAnimation
+from .animation.animation import Animation
 
 @dataclass
 class SanitisedModel:
@@ -32,6 +35,8 @@ class SanitisedModel:
   skin_objects: List[SkinObject] = field(init=None)
   unknown_data_objects: List[UnknownDataObject] = field(init=None)
 
+  animations: List[Animation] = field(init=None)
+
 
   def __post_init__(self):
     self.id = self.model.id
@@ -47,6 +52,8 @@ class SanitisedModel:
 
     self.texture_animations = self.model.model_data.texture_animations
     self.unknown_data_objects = self.model.model_data.unknown_data_objects
+
+    self.animations = self.sanitise_animations(self.model.model_data.animations.animations, self.bones)
   
 
   @staticmethod
@@ -60,6 +67,10 @@ class SanitisedModel:
   @staticmethod
   def sanitise_faces(faces: List[Face]) -> List[SanitisedFace]:
     return list(map(lambda face : SanitisedFace(face), faces))
+
+  @staticmethod
+  def sanitise_animations(animations: List[ParsedAnimation], bones: List[SanitisedBone]) -> List[Animation]:
+    return list(map(lambda animation : Animation(animation, bones), animations))
 
   @staticmethod
   def construct_uvs(faces: List[Face]) -> List[SanitisedFace]:

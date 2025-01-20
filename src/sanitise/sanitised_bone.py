@@ -14,6 +14,7 @@ class SanitisedBone:
   bone: Bone
 
   parent_bone: int = field(init=False)
+  bone_length: float = field(init=False)
 
   transform_matrix: List[List[float]] = field(init=False)
   extra_data: List[int] = field(init=False)
@@ -28,6 +29,7 @@ class SanitisedBone:
 
   def __post_init__(self):
     self.parent_bone = self.bone.parent_bone - 1
+    self.bone_length = self.bone.bone_length
     self.deconstruct_unknown_data(self.bone.unknown_data)
 
   def sanitise_parent_bone(self):

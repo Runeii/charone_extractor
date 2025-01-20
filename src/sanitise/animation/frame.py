@@ -1,0 +1,33 @@
+from dataclasses import dataclass
+from typing import List
+from .bone_pose import BonePose
+from .root_bone_pose import RootBonePose
+from ...parse.animation.frame import Frame as ParsedFrame
+from ..sanitised_bone import SanitisedBone
+
+@dataclass(init=False) 
+class Frame:
+  poses: List[BonePose]
+
+  def __init__(self, original: ParsedFrame, bones: List[SanitisedBone]):
+    scaled_offset = self.scale_offset(original.coordinate_offset)
+
+    self.poses = self.construct_bone_poses(original.poses, scaled_offset, bones)
+  
+  @staticmethod
+  def scale_offset(offset: List[int]):
+    return [int(x) / 256 for x in offset]
+
+  def construct_bone_poses(self, poses: List[bytes], root_offset: List[int], bones: List[SanitisedBone]):
+    parsed_poses = []
+    for i, pose_data in enumerate(poses):
+      if i == 0:
+        parsed_poses.append(RootBonePose(
+          pose_data,
+          offset=root_offset,
+          bone_length=bones[0].bone_length
+        ))
+        continue
+      parsed_poses.append(BonePose(pose_data))
+    
+    return parsed_poses

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from io import BytesIO
-from ...binary_reader import BinaryReader
+from ....utils.binary_reader import BinaryReader
 
 @dataclass
 class Pose:

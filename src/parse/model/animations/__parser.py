@@ -1,15 +1,16 @@
-import struct
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import List
-from .animations_header import AnimationsHeader
 from .animation import Animation
-from ...binary_reader import BinaryReader
+from ....utils.binary_reader import BinaryReader
 
 @dataclass
 class AnimationsParser:
   model_name: str
   data: bytes
+
+  number_of_animations: int = field(init=None)
+  animations: List[Animation] = field(init=None)
 
   def __post_init__(self):
     stream = BytesIO(self.data)

@@ -1,10 +1,9 @@
-import struct
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import List
-from ...binary_reader import BinaryReader
 from .frame import Frame
 
+## wiki is OOD for all of this
 @dataclass
 class Animation:
   name: str
@@ -15,8 +14,6 @@ class Animation:
   frames: List[Frame] = field(default_factory=list)
 
   def __post_init__(self):
-    print(f"Frame count: {self.frame_count}, bone count: {self.bone_count}")
-
     self.frames = self.parse_frames(self.frame_count)
   
   def parse_frames(self, number_of_frames: int):
