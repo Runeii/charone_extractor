@@ -1,4 +1,3 @@
-from ..headers.model_header import ModelHeader
 from dataclasses import dataclass, field
 from typing import List
 from .face import Face
@@ -13,9 +12,11 @@ from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class ModelData:
-  header: ModelHeader
   data: bytes
+  name: str
   offset: int
+
+  char_one_data: bytes | None = field(default=None)
 
   bones: List[Bone] = field(init=False)
   texture_animations: List[TextureAnimation] = field(init=False)
@@ -41,7 +42,7 @@ class ModelData:
 
     if triangle_count + quad_count != number_of_faces:
       raise ValueError("Triangle and quad counts do not match total face count")
-  
+
     offset_of_bones = BinaryReader.read_uint32(stream) + self.offset
     offset_of_vertices = BinaryReader.read_uint32(stream) + self.offset
     offset_of_texture_animations = BinaryReader.read_uint32(stream) + self.offset
@@ -58,8 +59,12 @@ class ModelData:
     self.vertices = self.parse_vertices(number_of_vertices, offset_of_vertices)
     self.skin_objects = self.parse_skin_objects(number_of_skin_objects, offset_of_skin_objects)
     self.unknown_data_objects = self.parse_unknown_data_objects(number_of_unknown_data_objects, offset_of_unknown_data_objects)
-    
-    self.animations = AnimationsParser(model_name=self.header.model_name, data=self.data[offset_of_animation_data:])
+
+    # When working with main character models, we're constructing the model data from a separate MCH file
+    # Animations remain within the chara.one file.
+    animation_data = self.char_one_data if self.char_one_data else self.data[offset_of_animation_data:]
+
+    self.animations = AnimationsParser(model_name=self.name, data=animation_data)
 
   def parse_bones(self, number_of_bones: int, offset_of_bones: int) -> List[Bone]:
     stream = BytesIO(self.data[offset_of_bones:])
@@ -75,8 +80,7 @@ class ModelData:
     stream = BytesIO(self.data[offset_of_texture_animations:])
     texture_animations: List[TextureAnimation] = []
     for _ in range(number_of_texture_animations):
-      texture_animation_data = stream.read(64)
-      texture_animation = TextureAnimation(texture_animation_data)
+      texture_animation = TextureAnimation(stream)
       texture_animations.append(texture_animation)
     
     return texture_animations

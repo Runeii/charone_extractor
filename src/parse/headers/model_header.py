@@ -10,10 +10,10 @@ class ModelHeader:
   model_id: int = field(init=False)
 
   is_main_field_model: bool = field(init=False)
-  main_field_id: int = field(init=False, default=None)
+  main_field_id: int = field(init=False)
 
-  tim_offsets: List[int] = field(default_factory=list, init=None)
-  model_data_offset: int = field(init=False, default=None)
+  tim_offsets: List[int] = field(default_factory=list)
+  model_data_offset: int = field(init=False)
   model_name: str = field(init=False)
 
   def __init__(self, stream: BytesIO):
@@ -45,4 +45,4 @@ class ModelHeader:
     
     self.model_name = BinaryReader.read_string(stream)
 
-    spacer = BinaryReader.read_uint32(stream)
+    _spacer = BinaryReader.read_uint32(stream)

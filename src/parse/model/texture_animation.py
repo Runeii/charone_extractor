@@ -3,7 +3,7 @@ from typing import List, Tuple
 from io import BytesIO
 from ...utils.binary_reader import BinaryReader
 
-@dataclass
+@dataclass(init=False)
 class TextureAnimation:
   """A data structure for parsing texture animation information.
   
@@ -17,14 +17,13 @@ class TextureAnimation:
   - original_area_coords (Tuple[int, int]): original UV coordinates
   - replacement_coords (List[Tuple[int, int]]): list of replacement UV coordinates
   """
-  data: bytes
 
   unknown1: int = field(init=False)
   total_textures: int = field(init=False)
   unknown2: int = field(init=False)
   u_size: int = field(init=False)
   v_size: int = field(init=False)
-  replacement_section_count: int = field(init=False)
+  replacement_coords_count: int = field(init=False)
   original_area_coords: Tuple[int, int] = field(init=False)
   replacement_coords: List[Tuple[int, int]] = field(init=False)
 
@@ -36,10 +35,7 @@ class TextureAnimation:
         BinaryReader.read_uint8(stream)
     )
 
-  def __post_init__(self):
-    assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
-    stream = BytesIO(self.data)
-
+  def __init__(self, stream: BytesIO):
     # Read initial bytes
     self.unknown1 = BinaryReader.read_uint8(stream)
     self.total_textures = BinaryReader.read_uint8(stream)
@@ -48,21 +44,20 @@ class TextureAnimation:
     self.v_size = BinaryReader.read_uint8(stream)
     
     # Read replacement section count
-    self.replacement_section_count = BinaryReader.read_uint8(stream)
+    self.replacement_coords_count = BinaryReader.read_uint8(stream)
 
     # Read original area coordinates
     self.original_area_coords = self.read_uv_pair(stream)
-
     # Skip 2 unknown bytes
     stream.read(2)
 
     # Read replacement coordinates
     self.replacement_coords = [
         self.read_uv_pair(stream) 
-        for _ in range(self.replacement_section_count)
+        for _ in range(self.replacement_coords_count)
     ]
 
   def __repr__(self):
       return (f"TextureAnimation(total_textures={self.total_textures}, "
               f"u_size={self.u_size}, v_size={self.v_size}, "
-              f"replacement_sections={self.replacement_section_count})")
+              f"replacement_sections={self.replacement_coords_count})")

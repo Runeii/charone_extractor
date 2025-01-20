@@ -14,14 +14,14 @@ class AnimationsParser:
 
   def __post_init__(self):
     stream = BytesIO(self.data)
-    number_of_animations = BinaryReader.read_uint16(stream)
-    print("number of animations", number_of_animations)
-    self.animations = self.parse_animations(number_of_animations, 2)
+    self.number_of_animations = BinaryReader.read_uint16(stream)
+    self.animations = self.parse_animations(self.number_of_animations, 2)
 
-  def parse_animations(self, number_of_animations: int, offset_of_animations: int):
+  def parse_animations(self, number_of_animations: int, offset_of_animations: int) -> List[Animation]:
     stream = BytesIO(self.data[offset_of_animations:])
-    animations = []
-    for i in range(number_of_animations):
+    animations: List[Animation] = []
+
+    for _ in range(number_of_animations):
       frame_count = BinaryReader.read_uint16(stream)
       bone_count = BinaryReader.read_uint16(stream)
 
