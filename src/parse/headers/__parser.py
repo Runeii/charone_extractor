@@ -7,7 +7,7 @@ from .model_header import ModelHeader
 @dataclass(init=False)
 class HeaderParser:
   model_count: int
-  model_headers: List[dict]
+  model_headers: List[ModelHeader]
 
   def __init__(self, file_data: bytes):
       if len(file_data) < 0x800:

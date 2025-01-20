@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple
 from io import BytesIO
-import struct
+from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class TextureAnimation:
@@ -17,25 +17,23 @@ class TextureAnimation:
   - original_area_coords (Tuple[int, int]): original UV coordinates
   - replacement_coords (List[Tuple[int, int]]): list of replacement UV coordinates
   """
-  unknown1: int = field(init=None)
-  total_textures: int = field(init=None)
-  unknown2: int = field(init=None)
-  u_size: int = field(init=None)
-  v_size: int = field(init=None)
-  replacement_section_count: int = field(init=None)
-  original_area_coords: Tuple[int, int] = field(init=None)
-  replacement_coords: List[Tuple[int, int]] = field(init=None)
+  data: bytes
 
-  @staticmethod
-  def read_uint8(stream: BytesIO) -> int:
-    return struct.unpack("<B", stream.read(1))[0]
+  unknown1: int = field(init=False)
+  total_textures: int = field(init=False)
+  unknown2: int = field(init=False)
+  u_size: int = field(init=False)
+  v_size: int = field(init=False)
+  replacement_section_count: int = field(init=False)
+  original_area_coords: Tuple[int, int] = field(init=False)
+  replacement_coords: List[Tuple[int, int]] = field(init=False)
 
   @staticmethod
   def read_uv_pair(stream: BytesIO) -> Tuple[int, int]:
     """Read a UV coordinate pair (two unsigned bytes)."""
     return (
-        TextureAnimation.read_uint8(stream), 
-        TextureAnimation.read_uint8(stream)
+        BinaryReader.read_uint8(stream), 
+        BinaryReader.read_uint8(stream)
     )
 
   def __post_init__(self):
@@ -43,14 +41,14 @@ class TextureAnimation:
     stream = BytesIO(self.data)
 
     # Read initial bytes
-    self.unknown1 = self.read_uint8(stream)
-    self.total_textures = self.read_uint8(stream)
-    self.unknown2 = self.read_uint8(stream)
-    self.u_size = self.read_uint8(stream)
-    self.v_size = self.read_uint8(stream)
+    self.unknown1 = BinaryReader.read_uint8(stream)
+    self.total_textures = BinaryReader.read_uint8(stream)
+    self.unknown2 = BinaryReader.read_uint8(stream)
+    self.u_size = BinaryReader.read_uint8(stream)
+    self.v_size = BinaryReader.read_uint8(stream)
     
     # Read replacement section count
-    self.replacement_section_count = self.read_uint8(stream)
+    self.replacement_section_count = BinaryReader.read_uint8(stream)
 
     # Read original area coordinates
     self.original_area_coords = self.read_uv_pair(stream)

@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple
 from io import BytesIO
-import struct
+from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class Bone:
@@ -16,35 +15,23 @@ class Bone:
   """
   data: bytes
 
-  parent_bone: int = field(init=None)
-  bone_length: int = field(init=None)
-  parent_bone_offset: int = field(init=None) # wiki needs update: this is parent bone offset! (so multiple of 64)
-  unknown2: int = field(init=None) # always 0x0 / 0?
-  unknown_data: bytes = field(init=None)
-
-  @staticmethod
-  def read_uint32(stream: BytesIO) -> int:
-    return struct.unpack("<I", stream.read(4))[0]
-      
-  @staticmethod
-  def read_uint16(stream: BytesIO) -> int:
-    return struct.unpack("<H", stream.read(2))[0]
-
-  @staticmethod
-  def read_int16(stream: BytesIO) -> int:
-    return struct.unpack("<h", stream.read(2))[0]
+  parent_bone: int = field(init=False)
+  bone_length: int = field(init=False)
+  parent_bone_offset: int = field(init=False) # wiki needs update: this is parent bone offset! (so multiple of 64)
+  unknown2: int = field(init=False) # always 0x0 / 0?
+  unknown_data: bytes = field(init=False)
 
   def __post_init__(self):
     assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
     
     stream = BytesIO(self.data)
 
-    self.parent_bone = self.read_int16(stream)
+    self.parent_bone = BinaryReader.read_int16(stream)
 
-    self.parent_bone_offset = self.read_uint16(stream)
-    self.unknown2 = self.read_uint32(stream)
+    self.parent_bone_offset = BinaryReader.read_uint16(stream)
+    self.unknown2 = BinaryReader.read_uint32(stream)
     
-    self.bone_length = self.read_int16(stream) # wiki incorrectly states this is uint16
+    self.bone_length = BinaryReader.read_int16(stream) # wiki incorrectly states this is uint16
 
     self.unknown_data = stream.read()
 

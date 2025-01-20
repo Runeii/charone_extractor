@@ -9,8 +9,8 @@ class AnimationsParser:
   model_name: str
   data: bytes
 
-  number_of_animations: int = field(init=None)
-  animations: List[Animation] = field(init=None)
+  number_of_animations: int = field(init=False)
+  animations: List[Animation] = field(init=False)
 
   def __post_init__(self):
     stream = BytesIO(self.data)

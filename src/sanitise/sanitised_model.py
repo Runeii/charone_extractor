@@ -22,20 +22,20 @@ from .animation.animation import Animation
 class SanitisedModel:
   model: ParsedModel
 
-  id: int = field(init=None)
-  name: str = field(init=None)
-  tim: TIM = field(init=None)
+  id: int = field(init=False)
+  name: str = field(init=False)
+  tim: TIM = field(init=False)
 
-  bones: List[SanitisedBone] = field(init=None)
-  faces: List[SanitisedFace] = field(init=None)
-  uvs: List[UV] = field(init=None)
+  bones: List[SanitisedBone] = field(init=False)
+  faces: List[SanitisedFace] = field(init=False)
+  uvs: List[UV] = field(init=False)
 
-  texture_animations: List[TextureAnimation] = field(init=None)
-  vertices: List[Vertex] = field(init=None)
-  skin_objects: List[SkinObject] = field(init=None)
-  unknown_data_objects: List[UnknownDataObject] = field(init=None)
+  texture_animations: List[TextureAnimation] = field(init=False)
+  vertices: List[Vertex] = field(init=False)
+  skin_objects: List[SkinObject] = field(init=False)
+  unknown_data_objects: List[UnknownDataObject] = field(init=False)
 
-  animations: List[Animation] = field(init=None)
+  animations: List[Animation] = field(init=False)
 
 
   def __post_init__(self):

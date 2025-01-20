@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple
 from io import BytesIO
-import struct
+from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class Vertex:
@@ -15,22 +14,18 @@ class Vertex:
   """
   data: bytes
 
-  x: float = field(init=None)
-  y: float = field(init=None)
-  z: float = field(init=None)
-
-  @staticmethod
-  def read_uint16(stream: BytesIO) -> int:
-      return struct.unpack("<H", stream.read(2))[0]
+  x: float = field(init=False)
+  y: float = field(init=False)
+  z: float = field(init=False)
 
   def __post_init__(self):
     assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
     stream = BytesIO(self.data)
 
     # Read and scale coordinates
-    self.x = self.read_uint16(stream)
-    self.y = self.read_uint16(stream)
-    self.z = self.read_uint16(stream)
+    self.x = BinaryReader.read_uint16(stream)
+    self.y = BinaryReader.read_uint16(stream)
+    self.z = BinaryReader.read_uint16(stream)
     
     # Skip 2 unknown bytes
     stream.read(2)

@@ -1,10 +1,9 @@
-import struct
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional
-import logging
+from typing import List, Optional
 from io import BytesIO
 from PIL import Image
 import os
+from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class TIMHeader:
@@ -29,10 +28,10 @@ class TIM:
     name: str
     data: bytes
 
-    stream: BytesIO = field(init=None)
-    header: Optional[TIMHeader] = field(init=None)
-    image_data: Optional[bytes] = field(init=None)
-    palette_data: Optional[bytes] = field(init=None)
+    stream: BytesIO = field(init=False)
+    header: Optional[TIMHeader] = field(init=False)
+    image_data: Optional[bytes] = field(init=False)
+    palette_data: Optional[bytes] = field(init=False)
 
 
     MAGIC_NUMBER = b'\x10\x00\x00\x00'
@@ -59,14 +58,6 @@ class TIM:
             result.append(f"  Num Palettes: {self.header.nb_pal}")
             
         return "\n".join(result)
-
-    @staticmethod
-    def read_uint32(stream: BytesIO) -> int:
-        return struct.unpack("<I", stream.read(4))[0]
-        
-    @staticmethod
-    def read_uint16(stream: BytesIO) -> int:
-        return struct.unpack("<H", stream.read(2))[0]
 
     def parse(self) -> bool:
         """
@@ -97,13 +88,13 @@ class TIM:
         palette_data = None
         
         if has_palette:
-            pal_size = self.read_uint32(self.stream)
+            pal_size = BinaryReader.read_uint32(self.stream)
             
             # Read palette header
-            pal_x = self.read_uint16(self.stream)
-            pal_y = self.read_uint16(self.stream)
-            pal_w = self.read_uint16(self.stream)
-            pal_h = self.read_uint16(self.stream)
+            pal_x = BinaryReader.read_uint16(self.stream)
+            pal_y = BinaryReader.read_uint16(self.stream)
+            pal_w = BinaryReader.read_uint16(self.stream)
+            pal_h = BinaryReader.read_uint16(self.stream)
             
             # Calculate palette entries
             one_pal_size = 16 if bpp == 0 else 256
@@ -118,11 +109,11 @@ class TIM:
             palette_data = self.stream.read(pal_size - 12)
 
         # Read image header
-        img_size = self.read_uint32(self.stream)
-        img_x = self.read_uint16(self.stream)
-        img_y = self.read_uint16(self.stream)
-        img_w = self.read_uint16(self.stream)
-        img_h = self.read_uint16(self.stream)
+        img_size = BinaryReader.read_uint32(self.stream)
+        img_x = BinaryReader.read_uint16(self.stream)
+        img_y = BinaryReader.read_uint16(self.stream)
+        img_w = BinaryReader.read_uint16(self.stream)
+        img_h = BinaryReader.read_uint16(self.stream)
         
         # Adjust width based on bpp
         if bpp == 0:
@@ -176,7 +167,7 @@ class TIM:
                 palette = []
                 pal_stream = BytesIO(self.palette_data)
                 for _ in range(16):
-                    color = self.read_uint16(pal_stream)
+                    color = BinaryReader.read_uint16(pal_stream)
                     r = (color & 0x1F) << 3
                     g = ((color >> 5) & 0x1F) << 3
                     b = ((color >> 10) & 0x1F) << 3
@@ -193,7 +184,7 @@ class TIM:
                 palette = []
                 pal_stream = BytesIO(self.palette_data)
                 for _ in range(256):
-                    color = self.read_uint16(pal_stream)
+                    color = BinaryReader.read_uint16(pal_stream)
                     r = (color & 0x1F) << 3
                     g = ((color >> 5) & 0x1F) << 3
                     b = ((color >> 10) & 0x1F) << 3

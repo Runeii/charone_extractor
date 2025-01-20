@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 from io import BytesIO
-import struct
+from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class UnknownDataObject:
@@ -19,33 +19,29 @@ class UnknownDataObject:
   """
   data: bytes
 
-  start_skinobject_index: int = field(init=None)
-  skinobject_count: int = field(init=None)
-  start_triangle_index: int = field(init=None)
-  triangle_count: int = field(init=None)
-  start_quad_index: int = field(init=None)
-  quad_count: int = field(init=None)
-  unknown: List[int] = field(init=None)
-  unknown2: List[int] = field(init=None)
-
-  @staticmethod
-  def read_uint16(stream: BytesIO) -> int:
-    return struct.unpack("<H", stream.read(2))[0]
+  start_skinobject_index: int = field(init=False)
+  skinobject_count: int = field(init=False)
+  start_triangle_index: int = field(init=False)
+  triangle_count: int = field(init=False)
+  start_quad_index: int = field(init=False)
+  quad_count: int = field(init=False)
+  unknown: List[int] = field(init=False)
+  unknown2: List[int] = field(init=False)
 
   def __post_init__(self):
     assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
     stream = BytesIO(self.data)
 
-    self.start_skinobject_index = self.read_uint16(stream)
-    self.skinobject_count = self.read_uint16(stream)
+    self.start_skinobject_index = BinaryReader.read_uint16(stream)
+    self.skinobject_count = BinaryReader.read_uint16(stream)
 
     self.unknown = list(stream.read(12))
 
-    self.start_triangle_index = self.read_uint16(stream)
-    self.triangle_count = self.read_uint16(stream)
+    self.start_triangle_index = BinaryReader.read_uint16(stream)
+    self.triangle_count = BinaryReader.read_uint16(stream)
 
-    self.start_quad_index = self.read_uint16(stream)
-    self.quad_count = self.read_uint16(stream)
+    self.start_quad_index = BinaryReader.read_uint16(stream)
+    self.quad_count = BinaryReader.read_uint16(stream)
 
     self.unknown2 = list(stream.read(8))
 

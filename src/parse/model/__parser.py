@@ -1,26 +1,36 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from .tim import TIM
-from .model import Model
+from .model_data import ModelData
 from ..headers.model_header import ModelHeader
 
 @dataclass
 class ModelParser:
   header: ModelHeader
-  model: Model
-  tim: TIM
+  model_data: ModelData = field(init=False)
+  tim: TIM = field(init=False)
 
   def __init__(self, header: ModelHeader, data: bytes):
+    self.header = header
 
-    model = Model(
-      header=header,
+    if header.is_main_field_model:
+      self.init_main_character_model(data)
+    else:
+      self.init_non_main_character_model(data)
+
+  def init_main_character_model(self, data: bytes):
+    pass
+
+  def init_non_main_character_model(self, data: bytes):
+    self.model_data = ModelData(
+      header=self.header,
       data=data,
-      offset=header.model_offset + header.model_data_offset + 4,
+      offset=self.header.model_offset + self.header.model_data_offset + 4,
     )
 
-    tim_offset = self.tim_offsets[0] if self.tim_offsets else None
+    tim_offset = self.header.tim_offsets[0]
     
     # Note: need to +4 for PC files
-    tim = TIM(self.name, self.data[self.model_offset + tim_offset + 4:]) if tim_offset is not None else None
-  
-    self.model = model
-    self.tim = tim
+    self.tim = TIM(
+      name=self.header.model_name,
+      data=data[self.header.model_offset + tim_offset + 4:]
+    )

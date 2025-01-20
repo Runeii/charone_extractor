@@ -15,9 +15,9 @@ class SanitisedVertex:
   """
   vertex: Vertex
 
-  x: float = field(init=None)
-  y: float = field(init=None)
-  z: float = field(init=None)
+  x: float = field(init=False)
+  y: float = field(init=False)
+  z: float = field(init=False)
 
   def __post_init__(self):
     self.x = self.sanitise_coord(self.vertex.x)

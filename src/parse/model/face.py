@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple
 from io import BytesIO
-import struct
+from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class Face:
@@ -22,61 +22,50 @@ class Face:
   """
   data: bytes
 
-  opcode: int = field(init=None)
-  vertices: List[int] = field(init=None)
-  edge_data: List[int] = field(init=None)
-  vertex_colors: List[int] = field(init=None)
-  texture_coords: List[Tuple[int, int]] = field(init=None)
-  texture_index: int = field(init=None)
-  unknown_flags: int = field(init=None)
+  opcode: int = field(init=False)
+  vertices: List[int] = field(init=False)
+  edge_data: List[int] = field(init=False)
+  vertex_colors: List[int] = field(init=False)
+  texture_coords: List[Tuple[int, int]] = field(init=False)
+  texture_index: int = field(init=False)
+  unknown_flags: int = field(init=False)
 
-  @staticmethod
-  def read_uint32(stream: BytesIO) -> int:
-      return struct.unpack("<I", stream.read(4))[0]
-      
-  @staticmethod
-  def read_uint16(stream: BytesIO) -> int:
-      return struct.unpack("<H", stream.read(2))[0]
-      
-  @staticmethod
-  def read_uint8(stream: BytesIO) -> int:
-      return struct.unpack("<B", stream.read(1))[0]
 
   def __post_init__(self):
     assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
     stream = BytesIO(self.data)
 
-    self.opcode = self.read_uint32(stream)
+    self.opcode = BinaryReader.read_uint32(stream)
     
-    __unknown = self.read_uint32(stream)
+    __unknown = BinaryReader.read_uint32(stream)
     
-    self.unknown_flags = self.read_uint16(stream)
+    self.unknown_flags = BinaryReader.read_uint16(stream)
     
-    __unknown2 = self.read_uint16(stream)
+    __unknown2 = BinaryReader.read_uint16(stream)
     
     self.vertices = [
-        self.read_uint16(stream) for _ in range(4)
+        BinaryReader.read_uint16(stream) for _ in range(4)
     ]
     
     self.edge_data = [
-        self.read_uint16(stream) for _ in range(4)
+        BinaryReader.read_uint16(stream) for _ in range(4)
     ]
     
     self.vertex_colors = [
-        self.read_uint32(stream) for _ in range(4)
+        BinaryReader.read_uint32(stream) for _ in range(4)
     ]
     
     self.texture_coords = [
-        (self.read_uint8(stream), self.read_uint8(stream))
+        (BinaryReader.read_uint8(stream), BinaryReader.read_uint8(stream))
         for _ in range(4)
     ]
     
-    __padding1 = self.read_uint16(stream)
+    __padding1 = BinaryReader.read_uint16(stream)
     
-    self.texture_index = self.read_uint16(stream)
+    self.texture_index = BinaryReader.read_uint16(stream)
     
-    __padding2a = self.read_uint32(stream)
-    __padding2b = self.read_uint32(stream)
+    __padding2a = BinaryReader.read_uint32(stream)
+    __padding2b = BinaryReader.read_uint32(stream)
 
   @property
   def has_semitransparency(self) -> bool:

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from io import BytesIO
-import struct
+from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class SkinObject:
@@ -14,21 +14,17 @@ class SkinObject:
   """
   data: bytes
 
-  first_vertex_index: int = field(init=None)
-  vertex_count: int = field(init=None)
-  bone_id: int = field(init=None)
-
-  @staticmethod
-  def read_uint16(stream: BytesIO) -> int:
-    return struct.unpack("<H", stream.read(2))[0]
+  first_vertex_index: int = field(init=False)
+  vertex_count: int = field(init=False)
+  bone_id: int = field(init=False)
 
   def __post_init__(self):
     assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
     stream = BytesIO(self.data)
 
-    self.first_vertex_index = self.read_uint16(stream)
-    self.vertex_count = self.read_uint16(stream)
-    self.bone_id = self.read_uint16(stream)
+    self.first_vertex_index = BinaryReader.read_uint16(stream)
+    self.vertex_count = BinaryReader.read_uint16(stream)
+    self.bone_id = BinaryReader.read_uint16(stream)
 
     stream.read(2)
 
