@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from ..sanitise.sanitised_model import SanitisedModel
+from ..format.formatted_model import FormattedModel
 
 @dataclass
 class Exporter:
   name: str
-  model: SanitisedModel
+  model: FormattedModel
 
   def export_as_obj(self, filepath: str) -> None:
       """
