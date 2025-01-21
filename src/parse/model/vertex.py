@@ -13,6 +13,7 @@ class Vertex:
   - unknown1 (2 bytes): SHORT - unknown value (skipped)
   """
   data: bytes
+  index: int
 
   x: float = field(init=False)
   y: float = field(init=False)

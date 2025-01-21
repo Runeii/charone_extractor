@@ -13,15 +13,17 @@ class FormattedVertex:
   - z (2 bytes): SHORT - Z position scaled by 1/256
   Note: Coordinates use 16-bit values with MAX_SIZE = 4096 for negative detection
   """
-
-  x: float = field(init=False)
-  y: float = field(init=False)
-  z: float = field(init=False)
+  index: int
+  x: float
+  y: float
+  z: float
 
   def __init__(self, vertex: Vertex):
+    self.index = vertex.index
     self.x = self.sanitise_coord(vertex.x)
     self.y = self.sanitise_coord(vertex.y)
     self.z = self.sanitise_coord(vertex.z)
+
 
   @staticmethod
   def sanitise_coord(value: float) -> float:

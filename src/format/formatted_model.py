@@ -8,6 +8,7 @@ from ..parse.model.vertex import Vertex
 from ..parse.model.texture_animation import TextureAnimation
 from ..parse.model.unknown_data_object import UnknownDataObject
 from ..parse.model.animations.__parser import AnimationsParser
+from ..parse.model.skin_object import SkinObject
 
 from .formatted_bone import FormattedBone
 from .formatted_face import FormattedFace
@@ -22,23 +23,25 @@ class FormattedModel:
   name: str
   textures: List[TIM]
 
+  skin_objects: List[SkinObject]
+  texture_animations: List[TextureAnimation]
+  unknown_data_objects: List[UnknownDataObject]
+
   bones: List[FormattedBone]
   faces: List[FormattedFace]
   vertices: List[FormattedVertex]
-
-  texture_animations: List[TextureAnimation]
-  unknown_data_objects: List[UnknownDataObject]
 
   def __init__(self, model: ModelParser):
     self.name = model.header.model_name
     self.textures = model.textures
 
+    self.texture_animations = model.model_data.texture_animations
+    self.unknown_data_objects = model.model_data.unknown_data_objects
+    self.skin_objects = model.model_data.skin_objects
+
     self.bones = self.sanitise_bones(bones=model.model_data.bones)
     self.vertices = self.sanitise_vertices(vertices=model.model_data.vertices)
     self.faces = self.sanitise_faces(faces=model.model_data.faces)
-
-    self.texture_animations = model.model_data.texture_animations
-    self.unknown_data_objects = model.model_data.unknown_data_objects
 
     self.uvs = self.construct_uvs(faces=model.model_data.faces)
 

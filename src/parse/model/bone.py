@@ -8,10 +8,10 @@ class Bone:
   
   Structure:
   - parent_bone (2 bytes): SHORT - parent bone ID (1-based, -1 if no parent)
-  - unknown1 (2 bytes): SHORT - unknown value
+  - parent_bone_offset (2 bytes): SHORT - unknown value
   - unknown2 (4 bytes): DWORD - unknown value
   - bone_length (2 bytes): SHORT - length of bone (needs special handling for negative values)
-  - unknown_data (54 bytes): 54 bytes - unknown values
+  - empty_data (54 bytes): 54 bytes - empty values
   """
   data: bytes
 
@@ -19,7 +19,7 @@ class Bone:
   bone_length: int = field(init=False)
   parent_bone_offset: int = field(init=False) # wiki needs update: this is parent bone offset! (so multiple of 64)
   unknown2: int = field(init=False) # always 0x0 / 0?
-  unknown_data: bytes = field(init=False)
+  empty_data: bytes = field(init=False)
 
   def __post_init__(self):
     assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
@@ -33,7 +33,7 @@ class Bone:
     
     self.bone_length = BinaryReader.read_int16(stream) # wiki incorrectly states this is uint16
 
-    self.unknown_data = stream.read()
+    self.empty_data = stream.read()
 
   def __repr__(self):
-      return f"Bone(parent={self.parent_bone}, length={self.bone_length}, unknown_data={self.unknown_data})"
+      return f"Bone(parent={self.parent_bone}, length={self.bone_length})"

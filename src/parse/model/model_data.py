@@ -57,6 +57,7 @@ class ModelData:
     self.texture_animations = self.parse_texture_animations(number_of_texture_animations, offset_of_texture_animations)
     self.faces = self.parse_faces(number_of_faces, offset_of_faces)
     self.vertices = self.parse_vertices(number_of_vertices, offset_of_vertices)
+    
     self.skin_objects = self.parse_skin_objects(number_of_skin_objects, offset_of_skin_objects)
     self.unknown_data_objects = self.parse_unknown_data_objects(number_of_unknown_data_objects, offset_of_unknown_data_objects)
 
@@ -99,9 +100,9 @@ class ModelData:
   def parse_vertices(self, number_of_vertices: int, offset_of_vertices: int) -> List[Vertex]:
     stream = BytesIO(self.data[offset_of_vertices:])
     vertices: List[Vertex] = []
-    for _ in range(number_of_vertices):
-      vertex_data = stream.read(24)
-      vertex = Vertex(vertex_data)
+    for index in range(number_of_vertices):
+      vertex_data = stream.read(8)
+      vertex = Vertex(vertex_data, index)
       vertices.append(vertex)
 
     return vertices
