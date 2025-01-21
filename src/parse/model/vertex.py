@@ -24,9 +24,9 @@ class Vertex:
     stream = BytesIO(self.data)
 
     # Read and scale coordinates
-    self.x = BinaryReader.read_uint16(stream)
-    self.y = BinaryReader.read_uint16(stream)
-    self.z = BinaryReader.read_uint16(stream)
+    self.x = BinaryReader.read_int16(stream)
+    self.y = BinaryReader.read_int16(stream)
+    self.z = BinaryReader.read_int16(stream)
     
     # Skip 2 unknown bytes
     stream.read(2)
