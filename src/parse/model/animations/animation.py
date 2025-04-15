@@ -16,10 +16,10 @@ class Animation:
   def __post_init__(self):
     self.frames = self.parse_frames(self.frame_count)
   
-  def parse_frames(self, number_of_frames: int):
+  def parse_frames(self, number_of_frames: int) -> List[Frame]:
     stream = BytesIO(self.data)
-    frames = []
-    for i in range(number_of_frames):
+    frames: List[Frame] = []
+    for _ in range(number_of_frames):
       frame_data = stream.read(Frame.calculate_size(self.bone_count))
       frame = Frame(self.bone_count, frame_data)
       frames.append(frame)

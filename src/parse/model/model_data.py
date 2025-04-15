@@ -25,6 +25,9 @@ class ModelData:
   skin_objects: List[SkinObject] = field(init=False)
   unknown_data_objects: List[UnknownDataObject] = field(init=False)
 
+  triangle_count: int = field(init=False)
+  quad_count: int = field(init=False)
+
   def __post_init__(self):
     stream = BytesIO(self.data[self.offset:])
     

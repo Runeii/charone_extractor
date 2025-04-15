@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ff8charaone"
+version = "0.1.0"
+authors = [
+  { name="A H", email="contact@highpertinent.com" },
+]
+description = "Classes for parsing and formatting FF8 character models from MCH files."
+readme = "README.md"
+requires-python = ">=3.8"
