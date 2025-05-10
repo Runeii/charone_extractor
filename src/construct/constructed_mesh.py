@@ -29,8 +29,14 @@ class ConstructedMesh:
         return []
 
     def construct_uvs(self, formatted_faces: List[FormattedFace]) -> List[Dict[str, float]]:
-        # TODO: Implement UV construction from face texture coordinates
-        return []
+        uvs = []
+        for face in formatted_faces:
+            for coords in face.texture_coords:
+                uvs.append({
+                    "u": coords[0],
+                    "v": coords[1]
+                })
+        return uvs
 
     def construct_indices(self, formatted_faces: List[FormattedFace]) -> List[int]:
         # TODO: Implement triangle index construction
