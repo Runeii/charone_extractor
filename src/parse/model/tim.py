@@ -3,7 +3,7 @@ from typing import List, Optional
 from io import BytesIO
 from PIL import Image
 import os
-from ...utils.binary_reader import BinaryReader
+from src.utils.binary_reader import BinaryReader
 
 @dataclass
 class TIMHeader:

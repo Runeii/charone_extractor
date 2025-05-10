@@ -3,7 +3,7 @@ import bpy
 from bpy.types import Object
 from mathutils import Vector
 
-from ...construct.constructed_skeleton import ConstructedSkeleton
+from src.construct.constructed_skeleton import ConstructedSkeleton
 
 class BlenderArmatureExporter:
     """Handles creation and setup of Blender armatures"""

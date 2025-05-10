@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
-from ..format.formatted_model import FormattedModel
+from src.format.formatted_model import FormattedModel
 from .constructed_mesh import ConstructedMesh
 from .constructed_skeleton import ConstructedSkeleton
 from .constructed_animation import ConstructedAnimation

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
+from src.utils.binary_reader import BinaryReader
 from io import BytesIO
-from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class UnknownDataObject:

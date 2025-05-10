@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple
-from ..parse.model.face import Face
+from src.parse.model.face import Face
 
 @dataclass(init=False)
 class FormattedFace:

@@ -2,7 +2,7 @@ import bpy
 from bpy.types import Object
 from mathutils import Euler
 
-from ...construct.constructed_animation import ConstructedAnimation
+from src.construct.constructed_animation import ConstructedAnimation
 
 class BlenderAnimationExporter:
     """Handles creation and setup of Blender animations"""

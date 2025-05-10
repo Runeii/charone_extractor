@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import List
-from .frame import Frame
+from src.parse.model.animations.frame import Frame
 
 ## wiki is OOD for all of this
 @dataclass

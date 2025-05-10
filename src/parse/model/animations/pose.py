@@ -1,15 +1,15 @@
 from dataclasses import dataclass, field
 from io import BytesIO
-from ....utils.binary_reader import BinaryReader
+from src.utils.binary_reader import BinaryReader
 
 @dataclass
 class Pose:
   data: bytes
 
-  byte1: int = field(init=0)
-  byte2: int = field(init=0)
-  byte3: int = field(init=0)
-  byte4: int = field(init=0)
+  byte1: int = field(default=0)
+  byte2: int = field(default=0)
+  byte3: int = field(default=0)
+  byte4: int = field(default=0)
   
   def __post_init__(self):
     assert len(self.data) == 4, f"Pose data must be 4 bytes, got {len(self.data)}"

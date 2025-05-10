@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple
 from io import BytesIO
-from ...utils.binary_reader import BinaryReader
+from src.utils.binary_reader import BinaryReader
 
 @dataclass(init=False)
 class TextureAnimation:

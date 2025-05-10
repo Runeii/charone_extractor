@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
-from .tim import TIM
-from .model_data import ModelData
-from ..headers.model_header import ModelHeader
-from ..mch.mch_header import MCHHeader
+from src.parse.model.tim import TIM
+from src.parse.model.model_data import ModelData
+from src.parse.headers.model_header import ModelHeader
+from src.parse.mch.mch_header import MCHHeader
 from typing import List
 
 @dataclass

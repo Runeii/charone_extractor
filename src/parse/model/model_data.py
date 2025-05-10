@@ -1,14 +1,14 @@
 from dataclasses import dataclass, field
 from typing import List
-from .face import Face
-from .bone import Bone
-from .vertex import Vertex
-from .skin_object import SkinObject
-from .unknown_data_object import UnknownDataObject
-from .texture_animation import TextureAnimation
+from src.parse.model.face import Face
+from src.parse.model.bone import Bone
+from src.parse.model.vertex import Vertex
+from src.parse.model.skin_object import SkinObject
+from src.parse.model.unknown_data_object import UnknownDataObject
+from src.parse.model.texture_animation import TextureAnimation
 from io import BytesIO
-from .animations.__parser import AnimationsParser
-from ...utils.binary_reader import BinaryReader
+from src.parse.model.animations.__parser import AnimationsParser
+from src.utils.binary_reader import BinaryReader
 
 @dataclass
 class ModelData:

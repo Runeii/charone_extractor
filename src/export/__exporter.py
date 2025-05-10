@@ -1,14 +1,14 @@
 from typing import Optional, Tuple
 from bpy.types import Object
 
-from ..construct.constructed_mesh import ConstructedMesh
-from ..construct.constructed_skeleton import ConstructedSkeleton
-from ..construct.constructed_animation import ConstructedAnimation
+from src.construct.constructed_mesh import ConstructedMesh
+from src.construct.constructed_skeleton import ConstructedSkeleton
+from src.construct.constructed_animation import ConstructedAnimation
 
-from .blender.mesh import BlenderMeshExporter
-from .blender.armature import BlenderArmatureExporter
-from .blender.animation import BlenderAnimationExporter
-from .blender.scene import BlenderSceneExporter
+from src.export.blender.mesh import BlenderMeshExporter
+from src.export.blender.armature import BlenderArmatureExporter
+from src.export.blender.animation import BlenderAnimationExporter
+from src.export.blender.scene import BlenderSceneExporter
 
 class BlenderExporter:
     """Main class for exporting constructed model data to Blender"""

@@ -1,8 +1,8 @@
 import bpy
 from bpy.types import Object
 
-from ...construct.constructed_mesh import ConstructedMesh
-from ...construct.constructed_skeleton import ConstructedSkeleton
+from src.construct.constructed_mesh import ConstructedMesh
+from src.construct.constructed_skeleton import ConstructedSkeleton
 
 class BlenderMeshExporter:
     """Handles creation and setup of Blender meshes"""

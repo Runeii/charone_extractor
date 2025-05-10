@@ -1,0 +1,5 @@
+{
+  "python.analysis.extraPaths": [
+      "/Users/andrew/Library/Application Support/Blender/4.3/scripts/addons/charone_extractor/venv/lib/python3.13/site-packages"
+  ]
+}

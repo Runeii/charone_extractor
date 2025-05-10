@@ -1,15 +1,21 @@
-import bpy
 import os
-import sys
+from typing import Tuple, Optional
 
-from parse.headers.__parser import HeaderParser
-from parse.model.__parser import ModelParser
-from format.formatted_model import FormattedModel
-from construct.__constructor import ConstructedModel
-from export.__exporter import BlenderExporter
+from src.parse.headers.__parser import HeaderParser
+from src.parse.model.__parser import ModelParser
+from src.format.formatted_model import FormattedModel
+from src.construct.__constructor import ConstructedModel
+from src.construct.constructed_mesh import ConstructedMesh
+from src.construct.constructed_skeleton import ConstructedSkeleton
+from src.construct.constructed_animation import ConstructedAnimation
+from src.export.__exporter import BlenderExporter
 
-def process_file(filepath):
-    """Process a CharOne file and import it into Blender"""
+def process_file(filepath: str) -> None:
+    """Process a CharOne file and import it into Blender
+    
+    Args:
+        filepath: Path to the .one file to process
+    """
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"File {filepath} does not exist")
 
@@ -38,6 +44,11 @@ def process_file(filepath):
         print(f"Model {constructed_model.name} constructed successfully")
 
         # Export stage
-        model_data = (constructed_model.mesh, constructed_model.skeleton, constructed_model.animation)
-        exported_objects = blender_exporter.export(model_data)
+        # Since we know there's only one mesh per model, we can safely use index 0
+        model_data: Tuple[ConstructedMesh, ConstructedSkeleton, Optional[ConstructedAnimation]] = (
+            constructed_model.meshes[0],
+            constructed_model.skeleton,
+            constructed_model.animations[0] if constructed_model.animations else None
+        )
+        _ = blender_exporter.export(model_data)  # Store result in _ since we don't use it
         print(f"Model {constructed_model.name} exported to Blender successfully")

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Dict
-from ..format.formatted_face import FormattedFace
-from ..format.formatted_vertex import FormattedVertex
-from ..format.formatted_skin import FormattedSkin
+from src.format.formatted_face import FormattedFace
+from src.format.formatted_vertex import FormattedVertex
+from src.format.formatted_skin import FormattedSkin
 import math
 
 @dataclass(init=False)

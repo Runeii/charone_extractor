@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import List
-from .animation import Animation
-from ....utils.binary_reader import BinaryReader
+from src.parse.model.animations.animation import Animation
+from src.utils.binary_reader import BinaryReader
 
 @dataclass
 class AnimationsParser:

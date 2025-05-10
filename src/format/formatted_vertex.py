@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from ..parse.model.vertex import Vertex
+from dataclasses import dataclass
+from src.parse.model.vertex import Vertex
 
 MAX_SIZE = 4096
 

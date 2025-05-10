@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import List
 from .formatted_frame import FormattedFrame
-from ...parse.model.animations.animation import Animation
+from src.parse.model.animations.animation import Animation
 from ...parse.model.animations.frame import Frame
-from ..formatted_bone import FormattedBone
+from src.format.formatted_bone import FormattedBone
 
 @dataclass(init=False)
 class FormattedAnimation:

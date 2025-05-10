@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ..parse.model.skin_object import SkinObject
+from src.parse.model.skin_object import SkinObject
 
 @dataclass(init=False)
 class FormattedSkin:

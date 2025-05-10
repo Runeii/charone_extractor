@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from ..parse.model.bone import Bone
+from src.parse.model.bone import Bone
 from typing import Tuple
 
 @dataclass

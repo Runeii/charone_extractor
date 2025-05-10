@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ...parse.model.animations.pose import Pose
+from src.parse.model.animations.pose import Pose
 from math import pi
 
 @dataclass(init=False)

@@ -2,7 +2,7 @@ from typing import List
 import bpy
 from bpy.types import Object
 
-from .types import ( BlenderObject, Modifier as BlenderModifier )
+from src.export.blender.types import ( BlenderObject, Modifier as BlenderModifier )
 
 class BlenderSceneExporter:
     """Handles scene integration and object linking"""

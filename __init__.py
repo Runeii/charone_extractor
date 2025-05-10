@@ -14,14 +14,17 @@ import bpy
 import os
 import sys
 
-# Add the src directory to Python path
+# Add the addon directory to Python path
 addon_dir = os.path.dirname(os.path.realpath(__file__))
-src_dir = os.path.join(addon_dir, 'src')
-if src_dir not in sys.path:
-    sys.path.append(src_dir)
+if addon_dir not in sys.path:
+    sys.path.insert(0, addon_dir)
 
 from bpy.props import StringProperty
 from bpy_extras.io_utils import ImportHelper
+from bpy.types import Context, Panel
+
+# Import local modules
+from src.main import process_file
 
 class ImportCharOne(bpy.types.Operator, ImportHelper):
     """Import from CharOne (.one)"""
@@ -32,21 +35,22 @@ class ImportCharOne(bpy.types.Operator, ImportHelper):
     filename_ext = ".one"
     filter_glob: StringProperty(default="*.one", options={'HIDDEN'})
 
-    def execute(self, context):
-        from src.main import process_file
+    def execute(self, context: 'Context') -> set[str]:
         process_file(self.filepath)
         return {'FINISHED'}
 
-def menu_func_import(self, context):
-    self.layout.operator(ImportCharOne.bl_idname, text="CharOne (.one)")
+def menu_func_import(self: 'Panel', context: 'Context') -> None:
+    if self.layout is not None:
+        layout: UILayout = self.layout
+        layout.operator(ImportCharOne.bl_idname, text="CharOne (.one)")
 
-def register():
+def register() -> None:
     bpy.utils.register_class(ImportCharOne)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
-def unregister():
+def unregister() -> None:
     bpy.utils.unregister_class(ImportCharOne)
-    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)  # type: ignore
 
 if __name__ == "__main__":
     register() 

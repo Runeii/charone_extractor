@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List
-from ...parse.model.animations.pose import Pose
+from src.parse.model.animations.pose import Pose
 from .bone_pose import BonePose
 
 ## Extends BonePose to include a location property

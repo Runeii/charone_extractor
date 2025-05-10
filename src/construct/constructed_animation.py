@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Dict, Any
-from ..format.animations.formatted_animation import FormattedAnimation
+from src.format.animations.formatted_animation import FormattedAnimation
 from ..format.animations.root_bone_pose import RootBonePose
 
 @dataclass(init=False)

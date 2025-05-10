@@ -2,7 +2,7 @@ import struct
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import List
-from ....utils.binary_reader import BinaryReader
+from src.utils.binary_reader import BinaryReader
 from .pose import Pose
 
 @dataclass

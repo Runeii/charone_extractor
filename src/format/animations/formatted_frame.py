@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import List
-from ...parse.model.animations.frame import Frame
-from ...parse.model.animations.pose import Pose
+from src.parse.model.animations.frame import Frame
+from src.parse.model.animations.pose import Pose
 
 from .bone_pose import BonePose
 from .root_bone_pose import RootBonePose
-from ..formatted_bone import FormattedBone
+from src.format.formatted_bone import FormattedBone
 
 @dataclass(init=False) 
 class FormattedFrame:

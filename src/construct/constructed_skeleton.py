@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Dict, Any, Tuple, Optional, Sequence, Mapping, TypedDict
 from math import pi
-from ..format.formatted_bone import FormattedBone
-from ..format.formatted_skin import FormattedSkin
+from src.format.formatted_bone import FormattedBone
+from src.format.formatted_skin import FormattedSkin
 import math
 
 class BoneData(TypedDict):

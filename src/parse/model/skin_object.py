@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
+from src.utils.binary_reader import BinaryReader
 from io import BytesIO
-from ...utils.binary_reader import BinaryReader
 
 @dataclass
 class SkinObject:
