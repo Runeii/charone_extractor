@@ -1,15 +1,26 @@
-from .parse.headers.__parser import HeaderParser
-from .parse.model.__parser import ModelParser
-from .format.formatted_model import FormattedModel
-from .construct.__constructor import ConstructedModel
-from .export.exporter import Exporter
+import bpy
+import os
+import sys
 
-def main():
-    with open("./INPUT/chara.one", "rb") as f:
+from parse.headers.__parser import HeaderParser
+from parse.model.__parser import ModelParser
+from format.formatted_model import FormattedModel
+from construct.__constructor import ConstructedModel
+from export.__exporter import BlenderExporter
+
+def process_file(filepath):
+    """Process a CharOne file and import it into Blender"""
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"File {filepath} does not exist")
+
+    with open(filepath, "rb") as f:
         file_data = f.read()
 
     model_headers = HeaderParser(file_data)
     print(f"Found {model_headers.model_count} models")
+
+    # Initialize Blender exporter
+    blender_exporter = BlenderExporter()
 
     for model_header in model_headers.model_headers:
         print(f"Processing model {model_header.model_name}")
@@ -27,9 +38,6 @@ def main():
         print(f"Model {constructed_model.name} constructed successfully")
 
         # Export stage
-        exporter = Exporter(name=constructed_model.name, model=constructed_model)
-        exporter.export_as_gltf(f"./OUTPUT/{constructed_model.name}.gltf")
-        print(f"Model {constructed_model.name} exported successfully")
-
-if __name__ == "__main__":
-    main()
+        model_data = (constructed_model.mesh, constructed_model.skeleton, constructed_model.animation)
+        exported_objects = blender_exporter.export(model_data)
+        print(f"Model {constructed_model.name} exported to Blender successfully")

@@ -1,8 +1,13 @@
 from dataclasses import dataclass
 from typing import List
-from ...utils.binary_reader import BinaryReader
+from src.utils.binary_reader import BinaryReader
 from io import BytesIO
 from .model_header import ModelHeader
+from src.format.formatted_bone import FormattedBone
+from src.format.formatted_vertex import FormattedVertex
+from src.format.formatted_face import FormattedFace
+from src.format.formatted_skin import FormattedSkin
+from src.format.formatted_model import FormattedModel
 
 @dataclass(init=False)
 class HeaderParser:
