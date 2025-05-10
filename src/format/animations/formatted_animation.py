@@ -12,6 +12,7 @@ class FormattedAnimation:
   bone_count: int
   
   frames: List[FormattedFrame]
+  bone_names: List[str]
 
   def __init__(self, original: Animation, bones: List[FormattedBone]):
     self.name = original.name
@@ -19,6 +20,7 @@ class FormattedAnimation:
     self.bone_count = original.bone_count
 
     self.frames = self.parse_frames(original.frames, bones)
+    self.bone_names = [bone.name for bone in bones]
 
   def parse_frames(self, frames: List[Frame], bones: List[FormattedBone]) -> List[FormattedFrame]:
     parsed_frames: List[FormattedFrame] = []
