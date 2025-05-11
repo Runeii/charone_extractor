@@ -34,10 +34,15 @@ class BlenderMeshExporter:
         # Create UV layer
         mesh.uv_layers.new(name="UV")
         
-        # Set UV coordinates
+        # Set UV coordinates for each face-vertex
         uv_layer = mesh.uv_layers[0]
-        for i, uv in enumerate(mesh_data.uvs):
-            uv_layer.data[i].uv = (uv["u"], uv["v"])
+        uv_idx = 0
+        for face in mesh.polygons:
+            for loop_idx in face.loop_indices:
+                if uv_idx < len(mesh_data.uvs):
+                    uv = mesh_data.uvs[uv_idx]
+                    uv_layer.data[loop_idx].uv = (uv["u"], uv["v"])
+                    uv_idx += 1
         
         return obj
         
@@ -59,8 +64,10 @@ class BlenderMeshExporter:
                 group.add([vertex_idx], 0.0, 'REPLACE')
             
             # Then set weight 1.0 for vertices that belong to this bone
+            # Since vertices are already reordered by skin groups, we can use the indices directly
             for skin in skeleton_data.skins:
                 if skin.bone_id == i:  # Compare with bone index instead of name
                     for j in range(skin.vertex_count):
                         vertex_idx = skin.first_vertex_index + j
-                        group.add([vertex_idx], 1.0, 'REPLACE') 
+                        if vertex_idx < len(mesh_obj.data.vertices):
+                            group.add([vertex_idx], 1.0, 'REPLACE') 

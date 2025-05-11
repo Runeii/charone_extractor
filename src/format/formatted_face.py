@@ -14,11 +14,23 @@ class FormattedFace:
   texture_index: int = field(init=False)
   
   def __init__(self, face: Face):
-    self.v2 = face.vertices[0]
-    self.v1 = face.vertices[1]
-    self.v3 = face.vertices[2]
-    self.v4 = face.vertices[3] if len(face.vertices) == 4 else None
-    self.texture_coords = face.texture_coords
+    # Order vertices to match MCH2Blend format
+    self.v1 = face.vertices[1]  # Second vertex
+    self.v2 = face.vertices[0]  # First vertex
+    self.v3 = face.vertices[2]  # Third vertex
+    self.v4 = face.vertices[3] if len(face.vertices) == 4 else None  # Fourth vertex (if quad)
+    
+    # Order texture coordinates to match vertex order
+    if len(face.texture_coords) >= 4:
+      self.texture_coords = [
+        face.texture_coords[1],  # v1
+        face.texture_coords[0],  # v2
+        face.texture_coords[2],  # v3
+        face.texture_coords[3]   # v4
+      ]
+    else:
+      self.texture_coords = face.texture_coords
+      
     self.texture_index = face.texture_index
 
     def __repr__(self) -> str:
