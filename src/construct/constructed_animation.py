@@ -87,6 +87,7 @@ class ConstructedAnimation:
                     rotation = self.get_special_rotation("root", rotation)
                     transform = {
                         "bone_index": bone_index,
+                        "bone_name": bones[bone_index]["name"],
                         "location": pose.location,
                         "rotation": rotation
                     }
@@ -98,6 +99,7 @@ class ConstructedAnimation:
                     rotation = self.get_special_rotation(bone_name, rotation)
                     transform = {
                         "bone_index": bone_index,
+                        "bone_name": bone_name,
                         "rotation": rotation
                     }
                 
