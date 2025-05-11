@@ -50,13 +50,17 @@ class BlenderMeshExporter:
             skeleton_data: The skeleton data containing bone information
         """
         # Create vertex groups for each bone
-        for bone in skeleton_data.bones:
+        for i, bone in enumerate(skeleton_data.bones):
             group = mesh_obj.vertex_groups.new(name=bone["name"])
             
-            # Find vertices that belong to this bone
+            # First set all vertices to weight 0
+            all_vertices = list(range(len(mesh_obj.data.vertices)))
+            for vertex_idx in all_vertices:
+                group.add([vertex_idx], 0.0, 'REPLACE')
+            
+            # Then set weight 1.0 for vertices that belong to this bone
             for skin in skeleton_data.skins:
-                if skin.bone_id == bone["name"]:
-                    # Add vertices to group with weight 1.0
-                    group.add(range(skin.first_vertex_index, 
-                                  skin.first_vertex_index + skin.vertex_count), 
-                            1.0, 'REPLACE') 
+                if skin.bone_id == i:  # Compare with bone index instead of name
+                    for j in range(skin.vertex_count):
+                        vertex_idx = skin.first_vertex_index + j
+                        group.add([vertex_idx], 1.0, 'REPLACE') 

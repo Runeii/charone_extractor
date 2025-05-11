@@ -29,15 +29,12 @@ class BlenderSceneExporter:
         child.parent = parent
         
     def setup_armature_modifier(self, mesh_obj: Object, armature_obj: Object) -> None:
-        """
-        Sets up armature modifier on mesh object
-        
-        Args:
-            mesh_obj: The mesh object to add the modifier to
-            armature_obj: The armature object to use as the modifier target
-        """
+        """Set up the armature modifier on the mesh object"""
+        # Give mesh object an armature modifier, using vertex groups but not envelopes
         modifier = mesh_obj.modifiers.new(name="Armature", type='ARMATURE')
         modifier.object = armature_obj
+        modifier.use_bone_envelopes = False
+        modifier.use_vertex_groups = True
         
     def setup_modifiers(self, mesh_obj: BlenderObject, armature_obj: BlenderObject) -> None:
         """

@@ -40,17 +40,17 @@ class BlenderExporter:
         # 3. Set up vertex groups
         self.mesh_exporter.setup_vertex_groups(mesh_obj, skeleton_data)
         
-        # 4. Create animations
+        # 4. Link to scene and set up relationships
+        self.scene_exporter.link_objects([mesh_obj, armature_obj])
+        
+        # 5. Set up parent-child relationship and armature modifier
+        self.scene_exporter.setup_parent_child(armature_obj, mesh_obj)
+        self.scene_exporter.setup_armature_modifier(mesh_obj, armature_obj)
+        
+        # 6. Create animations
         if animation_data_list:
             for animation_data in animation_data_list:
                 action = self.animation_exporter.create_animation_data(animation_data)
                 self.animation_exporter.setup_keyframes(armature_obj, animation_data, action)
-        
-        # 5. Link to scene and set up relationships
-        self.scene_exporter.link_objects([mesh_obj, armature_obj])
-        
-        # 6. Set up parent-child relationship and armature modifier
-        self.scene_exporter.setup_parent_child(armature_obj, mesh_obj)
-        self.scene_exporter.setup_armature_modifier(mesh_obj, armature_obj)
         
         return mesh_obj, armature_obj 
