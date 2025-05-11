@@ -21,14 +21,14 @@ class AnimationsParser:
     stream = BytesIO(self.data[offset_of_animations:])
     animations: List[Animation] = []
 
-    for _ in range(number_of_animations):
+    for i in range(number_of_animations):
       frame_count = BinaryReader.read_uint16(stream)
       bone_count = BinaryReader.read_uint16(stream)
 
       animation_size = Animation.calculate_size(frame_count, bone_count)
       animation_data = stream.read(animation_size)
 
-      animation = Animation("{model_name}_action_{i}", frame_count, bone_count, animation_data)
+      animation = Animation(f"{self.model_name}_action_{i}", frame_count, bone_count, animation_data)
       animations.append(animation)
     
     return animations

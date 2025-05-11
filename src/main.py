@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, Optional
+from typing import Tuple, List
 
 from src.parse.headers.__parser import HeaderParser
 from src.parse.model.__parser import ModelParser
@@ -48,10 +48,10 @@ def process_file(filepath: str) -> None:
 
         # Export stage
         # Since we know there's only one mesh per model, we can safely use index 0
-        model_data: Tuple[ConstructedMesh, ConstructedSkeleton, Optional[ConstructedAnimation]] = (
+        model_data: Tuple[ConstructedMesh, ConstructedSkeleton, List[ConstructedAnimation]] = (
             constructed_model.meshes[0],
             constructed_model.skeleton,
-            constructed_model.animations[0] if constructed_model.animations else None
+            constructed_model.animations
         )
         _ = blender_exporter.export(model_data)  # Store result in _ since we don't use it
         print(f"Model {constructed_model.name} exported to Blender successfully")
