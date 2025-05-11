@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import bpy
 from bpy.types import Object
 from mathutils import Vector

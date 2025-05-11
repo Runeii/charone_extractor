@@ -45,6 +45,6 @@ class BlenderExporter:
             self.animation_exporter.create_animation_data(animation_data)
         
         # 5. Link to scene and set up relationships
-        self.scene_exporter.link_objects(mesh_obj, armature_obj)
+        self.scene_exporter.link_objects([mesh_obj, armature_obj])
         
         return mesh_obj, armature_obj 

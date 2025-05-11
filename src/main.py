@@ -28,7 +28,10 @@ def process_file(filepath: str) -> None:
     # Initialize Blender exporter
     blender_exporter = BlenderExporter()
 
-    for model_header in model_headers.model_headers:
+    for index, model_header in enumerate(model_headers.model_headers):
+        if index > 0:
+            return
+            
         print(f"Processing model {model_header.model_name}")
         
         # Parse stage

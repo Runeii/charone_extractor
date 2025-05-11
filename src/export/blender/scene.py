@@ -15,7 +15,8 @@ class BlenderSceneExporter:
             objects: List of objects to link to the scene
         """
         for obj in objects:
-            bpy.context.scene.collection.objects.link(obj)
+          if obj.name not in bpy.context.scene.collection.objects:
+              bpy.context.scene.collection.objects.link(obj)
             
     def setup_parent_child(self, parent: Object, child: Object) -> None:
         """
