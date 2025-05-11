@@ -22,7 +22,7 @@ class ConstructedAnimation:
         
         Args:
             formatted_animation: Animation data from MCH format
-            skeleton: The skeleton to get bone names from
+            bones: List of bone data to get bone names from
         """
         self.name = formatted_animation.name
         self.duration = self.calculate_duration(formatted_animation)
@@ -113,3 +113,25 @@ class ConstructedAnimation:
 
     def __repr__(self) -> str:
         return f"ConstructedAnimation: {self.name} ({self.duration}s, {len(self.keyframes)} keyframes)" 
+
+    def get_first_frame_pose(self) -> List[Dict[str, float]]:
+        """Get the pose data from the first frame of the animation.
+        
+        Returns:
+            List of bone rotations in radians
+        """
+        if not self.keyframes:
+            return []
+            
+        first_frame = self.keyframes[0]
+        rotations: List[Dict[str, float]] = []
+        
+        for transform in first_frame["joint_transforms"]:
+            rotation = transform.get("rotation", [0.0, 0.0, 0.0])
+            rotations.append({
+                "rotX": rotation[0],
+                "rotY": rotation[1],
+                "rotZ": rotation[2]
+            })
+            
+        return rotations 

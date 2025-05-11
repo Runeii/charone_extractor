@@ -25,13 +25,11 @@ class ConstructedModel:
             skin_objects=formatted_model.skin_objects
         )]
 
-    def construct_skeleton(self, formatted_model: FormattedModel) -> ConstructedSkeleton:
-        rest_pose_data = None
-            
+    def construct_skeleton(self, formatted_model: FormattedModel) -> ConstructedSkeleton:            
         return ConstructedSkeleton(
             formatted_bones=formatted_model.bones,
             formatted_skins=formatted_model.skin_objects,
-            rest_pose_data=rest_pose_data
+            rest_animation=formatted_model.animations[0]
         )
 
     def construct_animations(self, formatted_model: FormattedModel) -> List[ConstructedAnimation]:
