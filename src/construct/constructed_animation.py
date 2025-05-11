@@ -49,7 +49,7 @@ class ConstructedAnimation:
     # - Belt bones: belt0/1 (100° Y, ±10° X), belt2/4 (±30° Z, 120° Y), belt3/5 (90° Y, ±45° Z)
     # - Breast bones: 45° Y, ±10° X, breast_L (180° Z)
     # - Shoulder bones: 45° Y, ±70° Z, ±15° X
-    def get_special_rotation(self, bone_name: str, rotation: List[float]) -> List[float]:
+    def get_rest_pose_rotation(self, bone_name: str, rotation: List[float]) -> List[float]:
         """Apply special rotations based on bone name and character.
         
         Args:
@@ -60,6 +60,15 @@ class ConstructedAnimation:
             Modified rotation values
         """
         # TODO: Implement special rotations from other-implementation.py
+        return rotation
+
+    def get_keyframe_rotation(self, bone_name: str, rotation: List[float]) -> List[float]:
+        """Apply special rotations based on bone name and character.
+        
+        Args:
+            bone_name: Name of the bone
+            rotation: Current rotation [x, y, z]
+        """
         return rotation
 
     def construct_keyframes(self, formatted_animation: FormattedAnimation, bones: List[BoneData]) -> List[Dict[str, Any]]:
@@ -84,7 +93,7 @@ class ConstructedAnimation:
                 if isinstance(pose, RootBonePose):
                     # Root bone has location and rotation
                     rotation = [pose.x, pose.y, pose.z]
-                    rotation = self.get_special_rotation("root", rotation)
+                    rotation = self.get_keyframe_rotation("root", rotation)
                     transform = {
                         "bone_index": bone_index,
                         "bone_name": bones[bone_index]["name"],
@@ -96,7 +105,7 @@ class ConstructedAnimation:
                     rotation = [pose.x, pose.y, pose.z]
                     # Get bone name from skeleton
                     bone_name = bones[bone_index]["name"]
-                    rotation = self.get_special_rotation(bone_name, rotation)
+                    rotation = self.get_keyframe_rotation(bone_name, rotation)
                     transform = {
                         "bone_index": bone_index,
                         "bone_name": bone_name,
@@ -116,7 +125,7 @@ class ConstructedAnimation:
     def __repr__(self) -> str:
         return f"ConstructedAnimation: {self.name} ({self.duration}s, {len(self.keyframes)} keyframes)" 
 
-    def get_first_frame_pose(self) -> List[Dict[str, float]]:
+    def get_rest_pose(self) -> List[Dict[str, float]]:
         """Get the pose data from the first frame of the animation.
         
         Returns:
@@ -130,6 +139,9 @@ class ConstructedAnimation:
         
         for transform in first_frame["joint_transforms"]:
             rotation = transform.get("rotation", [0.0, 0.0, 0.0])
+            bone_name = transform.get("bone_name", "")
+            rotation = self.get_rest_pose_rotation(bone_name, rotation)
+
             rotations.append({
                 "rotX": rotation[0],
                 "rotY": rotation[1],

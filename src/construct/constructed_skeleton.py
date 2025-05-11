@@ -41,7 +41,7 @@ class ConstructedSkeleton:
         
         # Create a ConstructedAnimation to process the rest pose
         constructed_animation = ConstructedAnimation(rest_animation, self.bones)
-        self.rest_pose = constructed_animation.get_first_frame_pose()
+        self.rest_pose = constructed_animation.get_rest_pose()
         
         # Calculate bone positions from rest pose rotations
         self._calculate_bone_positions()
