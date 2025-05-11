@@ -168,15 +168,6 @@ class ConstructedAnimation:
         return [eul.y, eul.x, eul.z]
 
     def get_keyframe_rotation(self, bone_name: str, rotation: List[float]) -> List[float]:
-        """Apply special rotations based on bone name and character.
-        
-        Args:
-            bone_name: Name of the bone
-            rotation: Current rotation [y, x, z] in radians in YXZ order
-            
-        Returns:
-            Modified rotation values in YXZ order
-        """
         # Create Euler from rotation in YXZ order
         eul = Euler((rotation[1], rotation[0], rotation[2]), 'YXZ')
         

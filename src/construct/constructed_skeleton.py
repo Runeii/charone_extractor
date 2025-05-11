@@ -7,6 +7,7 @@ from src.format.bone_names import get_bone_name
 from .constructed_animation import ConstructedAnimation
 from .types import BoneData
 import math
+from mathutils import Euler, Vector
 
 @dataclass(init=False)
 class ConstructedSkeleton:
@@ -55,33 +56,12 @@ class ConstructedSkeleton:
             rot_y = rotation["rotY"]
             rot_z = rotation["rotZ"]
             
+            # Create Euler rotation
+            eul = Euler((rot_x, rot_y, rot_z), 'YXZ')
+            
             # Start with base direction vector (0,0,1)
-            direction = [0.0, 0.0, 1.0]
-            
-            # Apply rotations in YXZ order
-            # First rotate around Y
-            cos_y = math.cos(rot_y)
-            sin_y = math.sin(rot_y)
-            x = direction[0] * cos_y - direction[2] * sin_y
-            z = direction[0] * sin_y + direction[2] * cos_y
-            direction[0] = x
-            direction[2] = z
-            
-            # Then rotate around X
-            cos_x = math.cos(rot_x)
-            sin_x = math.sin(rot_x)
-            y = direction[1] * cos_x - direction[2] * sin_x
-            z = direction[1] * sin_x + direction[2] * cos_x
-            direction[1] = y
-            direction[2] = z
-            
-            # Finally rotate around Z
-            cos_z = math.cos(rot_z)
-            sin_z = math.sin(rot_z)
-            x = direction[0] * cos_z - direction[1] * sin_z
-            y = direction[0] * sin_z + direction[1] * cos_z
-            direction[0] = x
-            direction[1] = y
+            direction = Vector((0.0, 0.0, 1.0))
+            direction.rotate(eul)
             
             # Set head position
             if i == 0:  # Root bone
@@ -93,15 +73,23 @@ class ConstructedSkeleton:
                     self.bones[i]["head"] = parent["tail"]
             
             # Calculate tail position based on rotation and length
-            scaled_length = self.bones[i]["length"]
+            scaled_length = self.bones[i]["length"] / 256.0  # Scale like the other implementation
             self.bones[i]["tail"] = [
-                self.bones[i]["head"][0] + direction[0] * scaled_length,
-                self.bones[i]["head"][1] + direction[1] * scaled_length,
-                self.bones[i]["head"][2] + direction[2] * scaled_length
+                self.bones[i]["head"][0] + direction.x * scaled_length,
+                self.bones[i]["head"][1] + direction.y * scaled_length,
+                self.bones[i]["head"][2] + direction.z * scaled_length
             ]
             
-            # Set roll value (currently defaulting to 0, can be enhanced later)
-            self.bones[i]["roll"] = 0.0
+            # Set roll value
+            if i == 0:  # Root bone
+                self.bones[i]["roll"] = math.radians(90)  # Default roll for root
+            elif i == 1 or self.bones[i]["name"] in ["neck", "head"] or \
+                 self.bones[i]["name"].startswith("hair") or \
+                 self.bones[i]["name"].startswith("cape") or \
+                 self.bones[i]["name"].startswith("collar"):
+                self.bones[i]["roll"] = math.radians(-90)  # -90 degrees for these bones
+            else:
+                self.bones[i]["roll"] = math.radians(90)  # Default roll for other bones
 
     def _get_bone_name(self, index: int, character_type: Optional[str] = None) -> str:
         """Get bone name for a given index.
