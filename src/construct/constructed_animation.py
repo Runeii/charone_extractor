@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Any
 from src.format.animations.formatted_animation import FormattedAnimation
 from ..format.animations.root_bone_pose import RootBonePose
-from .constructed_skeleton import ConstructedSkeleton
+from .constructed_skeleton import BoneData
 
 @dataclass(init=False)
 class ConstructedAnimation:
@@ -17,7 +17,7 @@ class ConstructedAnimation:
     duration: float
     keyframes: List[Dict[str, Any]]  # List of {time, joint_transforms}
     
-    def __init__(self, formatted_animation: FormattedAnimation, skeleton: ConstructedSkeleton):
+    def __init__(self, formatted_animation: FormattedAnimation, bones: List[BoneData]):
         """Initialize animation from formatted data.
         
         Args:
@@ -25,9 +25,8 @@ class ConstructedAnimation:
             skeleton: The skeleton to get bone names from
         """
         self.name = formatted_animation.name
-        self.skeleton = skeleton
         self.duration = self.calculate_duration(formatted_animation)
-        self.keyframes = self.construct_keyframes(formatted_animation)
+        self.keyframes = self.construct_keyframes(formatted_animation, bones)
 
     def calculate_duration(self, formatted_animation: FormattedAnimation) -> float:
         """Calculate animation duration in seconds.
@@ -63,7 +62,7 @@ class ConstructedAnimation:
         # TODO: Implement special rotations from other-implementation.py
         return rotation
 
-    def construct_keyframes(self, formatted_animation: FormattedAnimation) -> List[Dict[str, Any]]:
+    def construct_keyframes(self, formatted_animation: FormattedAnimation, bones: List[BoneData]) -> List[Dict[str, Any]]:
         """Construct keyframes from animation data.
         
         Args:
@@ -95,7 +94,7 @@ class ConstructedAnimation:
                     # Other bones only have rotation
                     rotation = [pose.x, pose.y, pose.z]
                     # Get bone name from skeleton
-                    bone_name = self.skeleton.bones[bone_index]["name"]
+                    bone_name = bones[bone_index]["name"]
                     rotation = self.get_special_rotation(bone_name, rotation)
                     transform = {
                         "bone_index": bone_index,

@@ -4,8 +4,6 @@ from src.format.formatted_model import FormattedModel
 from .constructed_mesh import ConstructedMesh
 from .constructed_skeleton import ConstructedSkeleton
 from .constructed_animation import ConstructedAnimation
-from src.format.animations.root_bone_pose import RootBonePose
-from src.parse.model.animations.pose import Pose
 
 @dataclass(init=False)
 class ConstructedModel:
@@ -37,7 +35,7 @@ class ConstructedModel:
         )
 
     def construct_animations(self, formatted_model: FormattedModel) -> List[ConstructedAnimation]:
-        return [ConstructedAnimation(formatted_animation=animation, skeleton=self.skeleton) for animation in formatted_model.animations]
+        return [ConstructedAnimation(formatted_animation=animation, bones=self.skeleton.bones) for animation in formatted_model.animations]
 
     def __repr__(self) -> str:
         return f"ConstructedModel: {self.name}\n" 
