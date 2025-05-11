@@ -52,9 +52,9 @@ class BlenderAnimationExporter:
         
         # Collect all unique bone names
         bone_names = {
-            transform["bone_name"]
+            transform.bone_name
             for keyframe in animation_data.keyframes
-            for transform in keyframe["joint_transforms"]
+            for transform in keyframe.joint_transforms
         }
         
         # Create F-curves for each bone
@@ -85,19 +85,19 @@ class BlenderAnimationExporter:
     def _add_keyframes_to_curves(self, f_curves: Dict[str, BoneCurves], animation_data: ConstructedAnimation) -> None:
         """Adds keyframes to the F-curves"""
         for keyframe in animation_data.keyframes:
-            frame_number = int(round(keyframe["time"] * 30))
+            frame_number = int(round(keyframe.time * 30))
             
-            for transform in keyframe["joint_transforms"]:
-                bone_name = transform["bone_name"]
-                
+            for transform in keyframe.joint_transforms:
+                bone_name = transform.bone_name
+
                 # Add location keyframes (only for root bone)
-                if "location" in transform and bone_name in f_curves:
+                if transform.location and bone_name in f_curves:
                     for i, curve in enumerate(f_curves[bone_name]["location"]):
-                        self._add_keyframe_point(curve, frame_number, transform["location"][i])
+                        self._add_keyframe_point(curve, frame_number, transform.location[i])
                 
                 # Add rotation keyframes for all bones
-                if "rotation" in transform and bone_name in f_curves:
-                    euler = Euler(transform["rotation"], 'YXZ')
+                if transform.rotation and bone_name in f_curves:
+                    euler = Euler(transform.rotation, 'YXZ')
                     for i, curve in enumerate(f_curves[bone_name]["rotation"]):
                         self._add_keyframe_point(curve, frame_number, euler[i])
 
@@ -144,7 +144,7 @@ class BlenderAnimationExporter:
         if animation_data.keyframes:
             last_keyframe = animation_data.keyframes[-1]
             bpy.context.scene.frame_start = 0
-            bpy.context.scene.frame_end = int(last_keyframe["time"] * 30)  # Convert to frames (30 FPS)
+            bpy.context.scene.frame_end = int(last_keyframe.time * 30)  # Convert to frames (30 FPS)
             
         # Set rotation mode for all bones
         for bone in armature_obj.pose.bones:
