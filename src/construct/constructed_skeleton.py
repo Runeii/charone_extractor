@@ -1,21 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Dict, Any, Tuple, Optional, Sequence, Mapping, TypedDict
+from typing import List, Dict, Tuple, Optional, Sequence, Mapping
 from src.format.formatted_bone import FormattedBone
 from src.format.formatted_skin import FormattedSkin
 from src.format.animations.formatted_animation import FormattedAnimation
 from src.format.bone_names import get_bone_name
 from .constructed_animation import ConstructedAnimation
-
-class BoneData(TypedDict):
-    name: str
-    parent: Optional[int]
-    length: float
-    transform: Mapping[str, Sequence[float]]
-    child_count: int
-    chain_length: int
-    head: List[float]
-    tail: List[float]
-    roll: float
+from .types import BoneData
+import math
 
 @dataclass(init=False)
 class ConstructedSkeleton:
@@ -24,10 +15,12 @@ class ConstructedSkeleton:
     Attributes:
         bones: List of bone data including name, parent, length, and transform
         rest_pose: List of bone rotations in rest pose
+        skins: List of skin data for vertex-bone relationships
     """
     bones: List[BoneData]  # List of {name, parent, length, transform, child_count, chain_length}
     rest_pose: List[Dict[str, float]]  # List of {rotX, rotY, rotZ} in radians
     formatted_bones: List[FormattedBone]
+    skins: List[FormattedSkin]  # Store skin data
     
     def __init__(self, formatted_bones: List[FormattedBone], 
                  formatted_skins: List[FormattedSkin],
@@ -42,6 +35,7 @@ class ConstructedSkeleton:
             character_type: Optional character type for bone name mapping
         """
         self.formatted_bones = formatted_bones
+        self.skins = formatted_skins  # Store skin data
         self.bones = self._construct_bones(formatted_bones, character_type)
         self._calculate_bone_hierarchy()
         
@@ -49,6 +43,66 @@ class ConstructedSkeleton:
         constructed_animation = ConstructedAnimation(rest_animation, self.bones)
         self.rest_pose = constructed_animation.get_first_frame_pose()
         
+        # Calculate bone positions from rest pose rotations
+        self._calculate_bone_positions()
+
+    def _calculate_bone_positions(self) -> None:
+        """Calculate bone positions (head/tail) and roll values from rest pose rotations."""
+        for i, _ in enumerate(self.bones):
+            # Get rotation from rest pose
+            rotation = self.rest_pose[i]
+            rot_x = rotation["rotX"]
+            rot_y = rotation["rotY"]
+            rot_z = rotation["rotZ"]
+            
+            # Start with base direction vector (0,0,1)
+            direction = [0.0, 0.0, 1.0]
+            
+            # Apply rotations in YXZ order
+            # First rotate around Y
+            cos_y = math.cos(rot_y)
+            sin_y = math.sin(rot_y)
+            x = direction[0] * cos_y - direction[2] * sin_y
+            z = direction[0] * sin_y + direction[2] * cos_y
+            direction[0] = x
+            direction[2] = z
+            
+            # Then rotate around X
+            cos_x = math.cos(rot_x)
+            sin_x = math.sin(rot_x)
+            y = direction[1] * cos_x - direction[2] * sin_x
+            z = direction[1] * sin_x + direction[2] * cos_x
+            direction[1] = y
+            direction[2] = z
+            
+            # Finally rotate around Z
+            cos_z = math.cos(rot_z)
+            sin_z = math.sin(rot_z)
+            x = direction[0] * cos_z - direction[1] * sin_z
+            y = direction[0] * sin_z + direction[1] * cos_z
+            direction[0] = x
+            direction[1] = y
+            
+            # Set head position
+            if i == 0:  # Root bone
+                self.bones[i]["head"] = [0.0, 0.0, 0.0]
+            else:
+                parent_idx = self.bones[i]["parent"]
+                if parent_idx is not None and 0 <= parent_idx < len(self.bones):
+                    parent = self.bones[parent_idx]
+                    self.bones[i]["head"] = parent["tail"]
+            
+            # Calculate tail position based on rotation and length
+            scaled_length = self.bones[i]["length"]
+            self.bones[i]["tail"] = [
+                self.bones[i]["head"][0] + direction[0] * scaled_length,
+                self.bones[i]["head"][1] + direction[1] * scaled_length,
+                self.bones[i]["head"][2] + direction[2] * scaled_length
+            ]
+            
+            # Set roll value (currently defaulting to 0, can be enhanced later)
+            self.bones[i]["roll"] = 0.0
+
     def _get_bone_name(self, index: int, character_type: Optional[str] = None) -> str:
         """Get bone name for a given index.
         
@@ -148,23 +202,5 @@ class ConstructedSkeleton:
         """
         return [(i, bone["parent"]) for i, bone in enumerate(self.bones)]
         
-    def get_bone_transforms(self) -> List[Dict[str, Any]]:
-        """Get bone transforms for Blender import.
-        
-        Returns:
-            List of bone transform data
-        """
-        transforms: List[Dict[str, Any]] = []
-        for bone in self.bones:
-            transform = {
-                "name": bone["name"],
-                "parent": bone["parent"],
-                "head": bone["head"],
-                "tail": bone["tail"],
-                "roll": bone["roll"]
-            }
-            transforms.append(transform)
-        return transforms
-
     def __repr__(self) -> str:
         return f"ConstructedSkeleton: {len(self.bones)} bones, {len(self.rest_pose)} rest pose rotations" 

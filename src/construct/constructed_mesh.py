@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Dict
 from src.format.formatted_face import FormattedFace
 from src.format.formatted_vertex import FormattedVertex
-from src.format.formatted_skin import FormattedSkin
+from src.construct.constructed_skeleton import ConstructedSkeleton
 import math
 
 @dataclass(init=False)
@@ -10,17 +10,23 @@ class ConstructedMesh:
     vertices: List[Dict[str, float]]  # List of {x, y, z} positions
     uvs: List[Dict[str, float]]       # List of {u, v} coordinates
     indices: List[int]                # Triangle indices
-    weights: List[Dict[int, float]]   # List of {joints: [indices], weights: [values]}
     
     def __init__(self, formatted_faces: List[FormattedFace], 
                  formatted_vertices: List[FormattedVertex],
-                 skin_objects: List[FormattedSkin]):
+                 skeleton: ConstructedSkeleton):
         self.vertices = self.construct_vertices(formatted_vertices)
         self.uvs = self.construct_uvs(formatted_faces)
         self.indices = self.construct_indices(formatted_faces)
-        self.weights = self.construct_weights(formatted_faces, skin_objects)
 
     def construct_vertices(self, formatted_vertices: List[FormattedVertex]) -> List[Dict[str, float]]:
+        """Construct vertices from MCH format data.
+        
+        Args:
+            formatted_vertices: List of vertices from MCH format
+            
+        Returns:
+            List of vertex positions
+        """
         return [{"x": v.x, "y": v.y, "z": v.z} for v in formatted_vertices]
 
     def _calculate_uv(self, u: int, v: int, tgroup: List[int]) -> Dict[str, float]:
@@ -53,24 +59,14 @@ class ConstructedMesh:
         return uvs
 
     def construct_indices(self, formatted_faces: List[FormattedFace]) -> List[int]:
-      indices: List[int] = []
-      for face in formatted_faces:
-        if face.v4 is None:
-          indices.extend([face.v1, face.v2, face.v3])
-        else:
-          indices.extend([face.v1, face.v2, face.v3])
-          indices.extend([face.v1, face.v3, face.v4])
-      return indices
-
-    def construct_weights(self, formatted_faces: List[FormattedFace], formatted_skins: List[FormattedSkin]) -> List[Dict[int, float]]:
-      weights: List[Dict[int, float]] = [{} for _ in range(len(self.vertices))]
-      
-      for skin in formatted_skins:
-        for vertex_idx in range(skin.first_vertex_index, skin.first_vertex_index + skin.vertex_count):
-          if vertex_idx < len(weights):
-            weights[vertex_idx] = {skin.bone_id: 1.0}
-    
-      return weights
+        indices: List[int] = []
+        for face in formatted_faces:
+            if face.v4 is None:
+                indices.extend([face.v1, face.v2, face.v3])
+            else:
+                indices.extend([face.v1, face.v2, face.v3])
+                indices.extend([face.v1, face.v3, face.v4])
+        return indices
 
     def __repr__(self) -> str:
         return f"ConstructedMesh: {len(self.vertices)} vertices, {len(self.indices)//3} triangles" 

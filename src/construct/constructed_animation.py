@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Any
 from src.format.animations.formatted_animation import FormattedAnimation
 from ..format.animations.root_bone_pose import RootBonePose
-from .constructed_skeleton import BoneData
+from .types import BoneData
 
 @dataclass(init=False)
 class ConstructedAnimation:
