@@ -13,20 +13,16 @@ class FormattedBone:
       head: Head position (x, y, z)
       tail: Tail position (x, y, z)
   """
-  parent: int
-  length: float
-  name: str
-  head: Tuple[float, float, float]
-  tail: Tuple[float, float, float]
 
   bone: Bone
 
   parent_bone: int = field(init=False)
   bone_length: float = field(init=False)
 
+  parent_bone_offset: int = field(init=False) # wiki needs update: this is parent bone offset! (so multiple of 64)
+
   def __post_init__(self):
     self.parent_bone = self.bone.parent_bone - 1
     self.bone_length = self.bone.bone_length
 
-  def sanitise_parent_bone(self):
-    self.parent_bone = self.parent_bone - 1
+    self.parent_bone_offset = self.bone.parent_bone_offset  # currently unused

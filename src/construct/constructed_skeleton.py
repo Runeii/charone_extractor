@@ -3,6 +3,7 @@ from typing import List, Dict, Any, Tuple, Optional, Sequence, Mapping, TypedDic
 from math import pi
 from src.format.formatted_bone import FormattedBone
 from src.format.formatted_skin import FormattedSkin
+from src.format.bone_names import get_bone_name
 import math
 
 class BoneData(TypedDict):
@@ -23,11 +24,9 @@ class ConstructedSkeleton:
     Attributes:
         bones: List of bone data including name, parent, length, and transform
         rest_pose: List of bone rotations in rest pose
-        bone_names: Mapping of bone indices to names
     """
     bones: List[BoneData]  # List of {name, parent, length, transform, child_count, chain_length}
     rest_pose: List[Dict[str, float]]  # List of {rotX, rotY, rotZ} in radians
-    bone_names: Dict[int, str]  # Mapping of bone indices to names
     
     def __init__(self, formatted_bones: List[FormattedBone], 
                  formatted_skins: List[FormattedSkin],
@@ -41,61 +40,28 @@ class ConstructedSkeleton:
             rest_pose_data: Optional animation data for rest pose
             character_type: Optional character type for bone name mapping
         """
-        self.bone_names = self._get_bone_names(character_type)
-        self.bones = self._construct_bones(formatted_bones)
+        self.bones = self._construct_bones(formatted_bones, character_type)
         self._calculate_bone_hierarchy()
         self.rest_pose = self._calculate_rest_pose(rest_pose_data) if rest_pose_data else []
         
-    def _get_bone_names(self, character_type: Optional[str] = None) -> Dict[int, str]:
-        """Get mapping of bone indices to names.
+    def _get_bone_name(self, index: int, character_type: Optional[str] = None) -> str:
+        """Get bone name for a given index.
         
         Args:
+            index: Bone index
             character_type: Optional character type for specific bone mappings
             
         Returns:
-            Dictionary mapping bone indices to names
+            Bone name
         """
-        # Base bone names - can be extended per character type
-        names = {
-            0: "root",
-            1: "upperbody",
-            2: "lowerbody",
-            3: "neck",
-            4: "head",
-            5: "shoulder_L",
-            6: "shoulder_R",
-            7: "arm_L",
-            8: "arm_R",
-            9: "forearm_L",
-            10: "forearm_R",
-            11: "hand_L",
-            12: "hand_R",
-            13: "hip_L",
-            14: "hip_R",
-            15: "thigh_L",
-            16: "thigh_R",
-            17: "tibia_L",
-            18: "tibia_R",
-            19: "foot_L",
-            20: "foot_R"
-        }
+        return get_bone_name(index, character_type)
         
-        # ##TODO LATER: Add character-specific bone name mappings (other-implementation.py: ~400-500)
-        # - Add support for hair bones (hair0-hair5)
-        # - Add support for cape bones (cape0-cape5)
-        # - Add support for collar bones (collar0-collar5)
-        # - Add support for belt bones (belt0-belt5)
-        # - Add support for dress bones (dress0-dress6)
-        if character_type:
-            pass
-            
-        return names
-        
-    def _construct_bones(self, formatted_bones: List[FormattedBone]) -> List[BoneData]:
+    def _construct_bones(self, formatted_bones: List[FormattedBone], character_type: Optional[str] = None) -> List[BoneData]:
         """Construct bone data from formatted bones.
         
         Args:
             formatted_bones: List of bones from MCH format
+            character_type: Optional character type for bone name mapping
             
         Returns:
             List of bone data dictionaries
@@ -108,7 +74,7 @@ class ConstructedSkeleton:
                 length -= 0x10000
                 
             bone_data: BoneData = {
-                "name": self.bone_names.get(i, f"bone_{i}"),
+                "name": self._get_bone_name(i, character_type),
                 "parent": bone.parent_bone - 1 if bone.parent_bone > 0 else None,
                 "length": length / 256.0,  # Scale to match Blender units
                 "transform": self._calculate_bone_transform(bone),

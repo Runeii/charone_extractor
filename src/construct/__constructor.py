@@ -1,9 +1,11 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 from src.format.formatted_model import FormattedModel
 from .constructed_mesh import ConstructedMesh
 from .constructed_skeleton import ConstructedSkeleton
 from .constructed_animation import ConstructedAnimation
+from src.format.animations.root_bone_pose import RootBonePose
+from src.parse.model.animations.pose import Pose
 
 @dataclass(init=False)
 class ConstructedModel:
@@ -26,14 +28,16 @@ class ConstructedModel:
         )]
 
     def construct_skeleton(self, formatted_model: FormattedModel) -> ConstructedSkeleton:
+        rest_pose_data = None
+            
         return ConstructedSkeleton(
             formatted_bones=formatted_model.bones,
-            skin_objects=formatted_model.skin_objects,
-            vertex_count=len(formatted_model.vertices)
+            formatted_skins=formatted_model.skin_objects,
+            rest_pose_data=rest_pose_data
         )
 
     def construct_animations(self, formatted_model: FormattedModel) -> List[ConstructedAnimation]:
-        return [ConstructedAnimation(animation) for animation in formatted_model.animations]
+        return [ConstructedAnimation(formatted_animation=animation, skeleton=self.skeleton) for animation in formatted_model.animations]
 
     def __repr__(self) -> str:
         return f"ConstructedModel: {self.name}\n" 

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Any
 from src.format.animations.formatted_animation import FormattedAnimation
 from ..format.animations.root_bone_pose import RootBonePose
+from .constructed_skeleton import ConstructedSkeleton
 
 @dataclass(init=False)
 class ConstructedAnimation:
@@ -16,15 +17,15 @@ class ConstructedAnimation:
     duration: float
     keyframes: List[Dict[str, Any]]  # List of {time, joint_transforms}
     
-    def __init__(self, formatted_animation: FormattedAnimation, character_name: str):
+    def __init__(self, formatted_animation: FormattedAnimation, skeleton: ConstructedSkeleton):
         """Initialize animation from formatted data.
         
         Args:
             formatted_animation: Animation data from MCH format
-            character_name: Name of the character for special bone handling
+            skeleton: The skeleton to get bone names from
         """
         self.name = formatted_animation.name
-        self.character_name = character_name
+        self.skeleton = skeleton
         self.duration = self.calculate_duration(formatted_animation)
         self.keyframes = self.construct_keyframes(formatted_animation)
 
@@ -93,8 +94,8 @@ class ConstructedAnimation:
                 else:
                     # Other bones only have rotation
                     rotation = [pose.x, pose.y, pose.z]
-                    # Get bone name from formatted data
-                    bone_name = formatted_animation.bone_names[bone_index]
+                    # Get bone name from skeleton
+                    bone_name = self.skeleton.bones[bone_index]["name"]
                     rotation = self.get_special_rotation(bone_name, rotation)
                     transform = {
                         "bone_index": bone_index,
