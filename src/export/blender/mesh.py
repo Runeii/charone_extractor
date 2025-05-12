@@ -50,26 +50,28 @@ class BlenderMeshExporter:
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
         
-        
-        # Apply UVs using face vertex indices
+        # Apply UVs using UV indices from formatted faces
         uv_layer = bm.loops.layers.uv[0]
         for i, face in enumerate(bm.faces):
+            # Get the corresponding formatted face
+            formatted_face = mesh_data.formatted_faces[i]
+            
             if len(face.loops) == 3:  # Triangle
-                face.loops[0][uv_layer].uv = (mesh_data.uvs[face.verts[0].index]["u"], 
-                                             mesh_data.uvs[face.verts[0].index]["v"])
-                face.loops[1][uv_layer].uv = (mesh_data.uvs[face.verts[1].index]["u"], 
-                                             mesh_data.uvs[face.verts[1].index]["v"])
-                face.loops[2][uv_layer].uv = (mesh_data.uvs[face.verts[2].index]["u"], 
-                                             mesh_data.uvs[face.verts[2].index]["v"])
+                face.loops[0][uv_layer].uv = (mesh_data.uvs[formatted_face.vt1]["u"], 
+                                             mesh_data.uvs[formatted_face.vt1]["v"])
+                face.loops[1][uv_layer].uv = (mesh_data.uvs[formatted_face.vt2]["u"], 
+                                             mesh_data.uvs[formatted_face.vt2]["v"])
+                face.loops[2][uv_layer].uv = (mesh_data.uvs[formatted_face.vt3]["u"], 
+                                             mesh_data.uvs[formatted_face.vt3]["v"])
             elif len(face.loops) == 4:  # Quad
-                face.loops[0][uv_layer].uv = (mesh_data.uvs[face.verts[0].index]["u"], 
-                                             mesh_data.uvs[face.verts[0].index]["v"])
-                face.loops[1][uv_layer].uv = (mesh_data.uvs[face.verts[1].index]["u"], 
-                                             mesh_data.uvs[face.verts[1].index]["v"])
-                face.loops[2][uv_layer].uv = (mesh_data.uvs[face.verts[2].index]["u"], 
-                                             mesh_data.uvs[face.verts[2].index]["v"])
-                face.loops[3][uv_layer].uv = (mesh_data.uvs[face.verts[3].index]["u"], 
-                                             mesh_data.uvs[face.verts[3].index]["v"])
+                face.loops[0][uv_layer].uv = (mesh_data.uvs[formatted_face.vt1]["u"], 
+                                             mesh_data.uvs[formatted_face.vt1]["v"])
+                face.loops[1][uv_layer].uv = (mesh_data.uvs[formatted_face.vt2]["u"], 
+                                             mesh_data.uvs[formatted_face.vt2]["v"])
+                face.loops[2][uv_layer].uv = (mesh_data.uvs[formatted_face.vt3]["u"], 
+                                             mesh_data.uvs[formatted_face.vt3]["v"])
+                face.loops[3][uv_layer].uv = (mesh_data.uvs[formatted_face.vt4]["u"], 
+                                             mesh_data.uvs[formatted_face.vt4]["v"])
         
         # Update mesh and return to object mode
         bmesh.update_edit_mesh(mesh)

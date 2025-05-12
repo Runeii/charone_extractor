@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from src.format.formatted_face import FormattedFace
 from src.format.formatted_vertex import FormattedVertex
 from src.format.formatted_skin import FormattedSkin
@@ -11,6 +11,7 @@ class ConstructedMesh:
     vertices: List[Dict[str, float]] 
     uvs: List[Dict[str, float]]
     faces: List[List[int]]
+    formatted_faces: List[FormattedFace]  # Store original formatted faces for UV mapping
     
     def __init__(self, formatted_faces: List[FormattedFace], 
                  formatted_vertices: List[FormattedVertex],
@@ -19,6 +20,7 @@ class ConstructedMesh:
         self.vertices = self.construct_vertices(formatted_vertices, skeleton.skins)
         self.uvs = self.construct_uvs(formatted_faces)
         self.faces = self.construct_faces(formatted_faces)
+        self.formatted_faces = formatted_faces  # Store the original formatted faces
 
     def construct_vertices(self, formatted_vertices: List[FormattedVertex], skins: List[FormattedSkin]) -> List[Dict[str, float]]:
         """Construct vertices from MCH format data, ordered by skin groups.
@@ -46,10 +48,8 @@ class ConstructedMesh:
 
     def _calculate_uv(self, u: int, v: int, tgroup: List[int]) -> Dict[str, float]:
         """Calculate UV coordinates with texture group offsets and scaling."""
-        # First invert V coordinate
         v = 128 - v
-        
-        # Apply texture group offset
+        # Apply texture group offset first
         u += tgroup[0] * 128
         v += tgroup[1] * 128
         
@@ -60,7 +60,8 @@ class ConstructedMesh:
         }
 
     def construct_uvs(self, formatted_faces: List[FormattedFace]) -> List[Dict[str, float]]:
-        uvs: List[Dict[str, float]] = []
+        # First pass: collect all UVs
+        all_uvs: List[Dict[str, float]] = []
         for face in formatted_faces:
             # Calculate texture group
             tgroup = [math.floor(face.texture_index/2), face.texture_index%2]
@@ -68,7 +69,7 @@ class ConstructedMesh:
             # Process UVs in correct order: v2, v1, v3, v4
             coords = face.texture_coords
             if len(coords) >= 3:
-                uvs.extend([
+                all_uvs.extend([
                     self._calculate_uv(coords[0][0], coords[0][1], tgroup),  # v2
                     self._calculate_uv(coords[1][0], coords[1][1], tgroup),  # v1
                     self._calculate_uv(coords[2][0], coords[2][1], tgroup),  # v3
@@ -76,9 +77,49 @@ class ConstructedMesh:
                 
                 # Add v4 if quad
                 if len(coords) == 4:
-                    uvs.append(self._calculate_uv(coords[3][0], coords[3][1], tgroup))
+                    all_uvs.append(self._calculate_uv(coords[3][0], coords[3][1], tgroup))
 
-        return uvs
+        # Second pass: deduplicate UVs and set indices
+        unique_uvs: List[Dict[str, float]] = []
+        uv_indices: Dict[Tuple[float, float], int] = {}  # (u,v) -> index mapping
+        
+        for face in formatted_faces:
+            coords = face.texture_coords
+            if len(coords) >= 3:
+                # Process v2
+                uv = self._calculate_uv(coords[0][0], coords[0][1], [math.floor(face.texture_index/2), face.texture_index%2])
+                key = (uv["u"], uv["v"])
+                if key not in uv_indices:
+                    uv_indices[key] = len(unique_uvs)
+                    unique_uvs.append(uv)
+                face.vt2 = uv_indices[key]
+                
+                # Process v1
+                uv = self._calculate_uv(coords[1][0], coords[1][1], [math.floor(face.texture_index/2), face.texture_index%2])
+                key = (uv["u"], uv["v"])
+                if key not in uv_indices:
+                    uv_indices[key] = len(unique_uvs)
+                    unique_uvs.append(uv)
+                face.vt1 = uv_indices[key]
+                
+                # Process v3
+                uv = self._calculate_uv(coords[2][0], coords[2][1], [math.floor(face.texture_index/2), face.texture_index%2])
+                key = (uv["u"], uv["v"])
+                if key not in uv_indices:
+                    uv_indices[key] = len(unique_uvs)
+                    unique_uvs.append(uv)
+                face.vt3 = uv_indices[key]
+                
+                # Process v4 if quad
+                if len(coords) == 4:
+                    uv = self._calculate_uv(coords[3][0], coords[3][1], [math.floor(face.texture_index/2), face.texture_index%2])
+                    key = (uv["u"], uv["v"])
+                    if key not in uv_indices:
+                        uv_indices[key] = len(unique_uvs)
+                        unique_uvs.append(uv)
+                    face.vt4 = uv_indices[key]
+
+        return unique_uvs
 
     def construct_faces(self, formatted_faces: List[FormattedFace]) -> List[List[int]]:
         faces: List[List[int]] = []
@@ -90,4 +131,4 @@ class ConstructedMesh:
         return faces
 
     def __repr__(self) -> str:
-      return f"ConstructedMesh: {len(self.vertices)} vertices, {len(self.faces)} faces" 
+        return f"ConstructedMesh: {len(self.vertices)} vertices, {len(self.faces)} faces" 
