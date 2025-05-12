@@ -33,6 +33,10 @@ class Bone:
     
     self.bone_length = BinaryReader.read_int16(stream) # wiki incorrectly states this is uint16
 
+    # Handle negative bone lengths properly
+    if self.bone_length > 32768:
+        self.bone_length -= 65536
+
     self.empty_data = stream.read()
 
   def __repr__(self):

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import List, Dict, Tuple, Optional, Sequence, Mapping
 from src.format.formatted_bone import FormattedBone
 from src.format.formatted_skin import FormattedSkin
+from src.format.formatted_model import FormattedModel
+
 from src.format.animations.formatted_animation import FormattedAnimation
 from src.format.bone_names import get_bone_name
 from src.format.animations.root_bone_pose import RootBonePose
@@ -19,29 +21,23 @@ class ConstructedSkeleton:
         rest_pose: List of bone rotations in rest pose
         skins: List of skin data for vertex-bone relationships
     """
+    name: str
     bones: List[BoneData]  # List of {name, parent, length, transform, child_count, chain_length}
     rest_pose: List[Dict[str, float]]  # List of {rotX, rotY, rotZ} in radians
     formatted_bones: List[FormattedBone]
     skins: List[FormattedSkin]  # Store skin data
     
-    def __init__(self, formatted_bones: List[FormattedBone], 
-                 formatted_skins: List[FormattedSkin],
-                 rest_animation: FormattedAnimation,
-                 character_type: Optional[str] = None):
-        """Initialize skeleton from formatted data.
-        
-        Args:
-            formatted_bones: List of bones from MCH format
-            formatted_skins: List of skin objects for vertex mapping
-            rest_animation: Animation to use for rest pose (typically index 0)
-            character_type: Optional character type for bone name mapping
-        """
-        self.formatted_bones = formatted_bones
-        self.skins = formatted_skins  # Store skin data
-        self.bones = self._construct_bones(formatted_bones, character_type)
+    def __init__(self, formatted_model: FormattedModel):
+        self.name = formatted_model.name
+        self.formatted_bones = formatted_model.bones;
+        self.formatted_skins = formatted_model.skin_objects;
+        self.formatted_bones = formatted_model.bones;
+        self.skins = formatted_model.skin_objects;
+        self.bones = self._construct_bones()
         self._calculate_bone_hierarchy()
         
         # Create a ConstructedAnimation to process the rest pose
+        rest_animation = formatted_model.animations[0]
         constructed_animation = ConstructedAnimation(rest_animation, self.bones)
         self.rest_pose = constructed_animation.get_rest_pose()
         
@@ -57,7 +53,7 @@ class ConstructedSkeleton:
         root_pose: RootBonePose = rest_animation.frames[0].poses[0]
         print("first_frame", "is of type:", type(root_pose).__name__)
         offset = root_pose.location
-        for i, _ in enumerate(self.bones):
+        for i, bone in enumerate(self.formatted_bones):
             # Get rotation from rest pose
             rotation = self.rest_pose[i]
             rot_x = rotation["rotX"]
@@ -66,22 +62,18 @@ class ConstructedSkeleton:
             
             # Create Euler rotation
             eul = Euler((rot_x, rot_y, rot_z), 'YXZ')
-            
-            # Start with base direction vector (0,0,1)
             direction = Vector((0.0, 0.0, 1.0))
             direction.rotate(eul)
             
-            # Set head position
             if i == 0:  # Root bone
                 self.bones[i]["head"] = [0.0, 0.0, 0.0]
-                # For root bone, use the animation offset to determine length
-                # Calculate length from offset vector, matching other implementation
                 self.bones[i]["length"] = Vector((offset[1], offset[0], offset[2])).length
             else:
                 parent_idx = self.bones[i]["parent"]
                 if parent_idx is not None and 0 <= parent_idx < len(self.bones):
                     parent = self.bones[parent_idx]
                     self.bones[i]["head"] = parent["tail"]
+                    self.bones[i]["length"] = bone.bone_length
             
             # Calculate tail position based on rotation and length
             scaled_length = self.bones[i]["length"] / 256.0  # Scale like the other implementation
@@ -102,19 +94,8 @@ class ConstructedSkeleton:
             else:
                 self.bones[i]["roll"] = math.radians(90)  # Default roll for other bones
 
-    def _get_bone_name(self, index: int, character_type: Optional[str] = None) -> str:
-        """Get bone name for a given index.
         
-        Args:
-            index: Bone index
-            character_type: Optional character type for specific bone mappings
-            
-        Returns:
-            Bone name
-        """
-        return get_bone_name(index, character_type)
-        
-    def _construct_bones(self, formatted_bones: List[FormattedBone], character_type: Optional[str] = None) -> List[BoneData]:
+    def _construct_bones(self) -> List[BoneData]:
         """Construct bone data from formatted bones.
         
         Args:
@@ -125,16 +106,11 @@ class ConstructedSkeleton:
             List of bone data dictionaries
         """
         bones: List[BoneData] = []
-        for i, bone in enumerate(formatted_bones):
-            # Handle bone length (negative values)
-            length = bone.bone_length
-            if length > 0x8000:
-                length -= 0x10000
-                
+        for i, bone in enumerate(self.formatted_bones):
             bone_data: BoneData = {
-                "name": self._get_bone_name(i, character_type),
-                "parent": bone.parent_bone - 1 if bone.parent_bone > 0 else None,
-                "length": length / 256.0,  # Scale to match Blender units
+                "name": get_bone_name(i, self.name),
+                "parent": bone.parent_bone if bone.parent_bone >= 0 else None,
+                "length": bone.bone_length,
                 "transform": self._calculate_bone_transform(bone),
                 "child_count": 0,  # Will be calculated in _calculate_bone_hierarchy
                 "chain_length": 1,  # Will be calculated in _calculate_bone_hierarchy
@@ -143,7 +119,8 @@ class ConstructedSkeleton:
                 "roll": 0.0  # Will be calculated in _calculate_rest_pose
             }
             bones.append(bone_data)
-            
+          
+        print("Bones: ", bones)
         return bones
         
     def _calculate_bone_hierarchy(self) -> None:

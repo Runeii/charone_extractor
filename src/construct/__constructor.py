@@ -27,11 +27,7 @@ class ConstructedModel:
         )]
 
     def construct_skeleton(self, formatted_model: FormattedModel) -> ConstructedSkeleton:            
-        return ConstructedSkeleton(
-            formatted_bones=formatted_model.bones,
-            formatted_skins=formatted_model.skin_objects,
-            rest_animation=formatted_model.animations[0]
-        )
+        return ConstructedSkeleton(formatted_model=formatted_model)
 
     def construct_animations(self, formatted_model: FormattedModel) -> List[ConstructedAnimation]:
         return [ConstructedAnimation(formatted_animation=animation, bones=self.skeleton.bones) for animation in formatted_model.animations]

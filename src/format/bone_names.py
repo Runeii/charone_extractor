@@ -4,40 +4,13 @@ This module will be replaced with a different bone identification system in the 
 
 from typing import Dict, Optional, Protocol, List, Union
 
-# Base bone names - can be extended per character type
-STANDARD_BONE_NAMES: Dict[int, str] = {
-    0: "root",
-    1: "upperbody",
-    2: "lowerbody",
-    3: "neck",
-    4: "head",
-    5: "shoulder_L",
-    6: "shoulder_R",
-    7: "arm_L",
-    8: "arm_R",
-    9: "forearm_L",
-    10: "forearm_R",
-    11: "hand_L",
-    12: "hand_R",
-    13: "hip_L",
-    14: "hip_R",
-    15: "thigh_L",
-    16: "thigh_R",
-    17: "tibia_L",
-    18: "tibia_R",
-    19: "foot_L",
-    20: "foot_R"
-}
-
-# Extended bone names for special characters
-EXTENDED_BONE_NAMES: List[str] = [
-    "root", "upperbody", "lowerbody", "neck", "collar0", "collar1", "collar2", "collar3", "collar4",
-    "collar5", "breast_L", "breast_R", "cape0", "cape1", "cape2", "cape3", "cape4", "cape5",
-    "head", "hair0", "hair1", "hair2", "hair3", "hair4", "hair5", "shoulder_L", "shoulder_R",
-    "arm_L", "arm_R", "forearm_L", "forearm_R", "hand_L", "hand_R", "dress0", "dress1", "dress2",
-    "dress3", "dress4", "dress5", "dress6", "hip_L", "hip_R", "belt0", "belt1", "belt2",
-    "belt3", "belt4", "belt5", "thigh_L", "thigh_R", "tibia_L", "tibia_R", "foot_L", "foot_R"
-]
+BONE_NAMES=\
+  ["root","upperbody","lowerbody","neck","collar0","collar1","collar2","collar3","collar4",\
+  "collar5","breast_L","breast_R","cape0","cape1","cape2","cape3","cape4","cape5",\
+  "head","hair0","hair1","hair2","hair3","hair4","hair5","shoulder_L","shoulder_R",\
+  "arm_L","arm_R","forearm_L","forearm_R","hand_L","hand_R","dress0","dress1","dress2",\
+  "dress3","dress4","dress5","dress6","hip_L","hip_R","belt0","belt1","belt2",\
+  "belt3","belt4","belt5","thigh_L","thigh_R","tibia_L","tibia_R","foot_L","foot_R"]
 
 # Common bone sequence rows used across characters
 FIRST_ROW = [0, 1, 2, 4, "N", "N", "N", "N", "N"]
@@ -145,47 +118,8 @@ CHARACTER_BONE_SEQUENCES: Dict[str, List[Union[int, str]]] = {
     "d062": [0, 1, 2, 4, 12, 19, 9, 16, "N", "N", 3, 5, "N", "N", "N", "N", "N", "N", 10, 17, "N", "N", "N", "N", 23, 8, 11, 15, 18, 22, 24, 27, 28, "N", "N", "N"] + FIFTH_ROW + ["N", "N", "N", 13, 14, 20, 21, 25, 26]
 }
 
-class BoneIdentifier(Protocol):
-    """Protocol for bone identification.
-    This will be replaced with a more robust system in the future.
-    """
-    def get_bone_type(self, index: int) -> str:
-        """Get the type/role of a bone by its index.
-        
-        Args:
-            index: Bone index
-            
-        Returns:
-            String identifying the bone's type/role
-        """
-        ...
 
-class StandardBoneIdentifier:
-    """Temporary bone identifier using the standard name mapping.
-    This will be replaced with a more robust system in the future.
-    """
-    def __init__(self, character_type: Optional[str] = None):
-        self.character_type = character_type
-        
-    def get_bone_type(self, index: int) -> str:
-        """Get bone type using the standard name mapping.
-        
-        Args:
-            index: Bone index
-            
-        Returns:
-            Bone type/role
-        """
-        if self.character_type and self.character_type in CHARACTER_BONE_SEQUENCES:
-            sequence = CHARACTER_BONE_SEQUENCES[self.character_type]
-            if index < len(sequence) and sequence[index] != "N":
-                bone_index = int(sequence[index])
-                return EXTENDED_BONE_NAMES[bone_index]
-            
-        return STANDARD_BONE_NAMES.get(index, f"bone_{index}")
-
-# Temporary helper function for backward compatibility
-def get_bone_name(index: int, character_type: Optional[str] = None) -> str:
+def get_bone_name(index: int, model_name: str) -> str:
     """Get bone name for a given index.
     This is a temporary function that will be removed in the future.
     
@@ -196,4 +130,13 @@ def get_bone_name(index: int, character_type: Optional[str] = None) -> str:
     Returns:
         Bone name
     """
-    return StandardBoneIdentifier(character_type).get_bone_type(index)
+    if model_name and model_name in CHARACTER_BONE_SEQUENCES:
+        print("Got sequence for: ", model_name)
+        sequence = CHARACTER_BONE_SEQUENCES[model_name]
+        # Find the index of the VALUE of index in the sequence
+        bone_index = sequence.index(index)
+        print("Bone index: ", bone_index)
+        return BONE_NAMES[bone_index]
+      
+    print("Unknown bone: ", model_name, index)
+    return "N"

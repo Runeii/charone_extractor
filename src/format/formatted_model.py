@@ -30,7 +30,7 @@ class FormattedModel:
   vertices: List[FormattedVertex]
 
   def __init__(self, model: ModelParser):
-    self.name = model.header.model_name
+    self.name = model.header.model_name.replace("x", "")
     self.textures = model.textures
 
     self.texture_animations = model.model_data.texture_animations
