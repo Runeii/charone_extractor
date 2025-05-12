@@ -27,8 +27,8 @@ class TIM:
     data: bytes
 
     stream: BytesIO = field(init=False)
-    header: Optional[TIMHeader] = field(init=False)
-    image_data: Optional[bytes] = field(init=False)
+    header: TIMHeader = field(init=False)
+    image_data: bytes = field(init=False)
     palette_data: Optional[bytes] = field(init=False)
 
 
@@ -36,11 +36,11 @@ class TIM:
     
     def __post_init__(self):
         self.stream = BytesIO(self.data)
-        self.header: Optional[TIMHeader] = None
-        self.image_data: Optional[bytes] = None
-        self.palette_data: Optional[bytes] = None
 
         self.parse()
+
+        if self.header.has_palette and self.palette_data is None:
+            raise ValueError("Palette data is missing")
         
     def __str__(self):
         if not self.header:
@@ -138,6 +138,8 @@ class TIM:
         
         # Read image data
         self.image_data = self.stream.read(img_size - 12)
-        self.palette_data = palette_data
+
+        if has_palette:
+          self.palette_data = palette_data
         
         return True

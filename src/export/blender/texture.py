@@ -1,4 +1,5 @@
 import bpy
+from bpy.types import Image
 from typing import List
 from src.parse.model.tim import TIM
 
@@ -16,17 +17,17 @@ class BlenderTextureExporter:
         Returns:
             List of created Blender images
         """
-        blender_images = []
+        blender_images: List[Image] = []
         
         for i, tim in enumerate(textures):
             # Create new image
-            image = bpy.data.images.new(f"{model_name}-{i}", tim.header.img_w, tim.header.img_h)
+            image = bpy.data.images.new(f"{model_name}-{i}", tim.header.img_w, tim.header.img_h)  # type: ignore[attr-defined]
             
             # Convert TIM data to RGBA pixels
             pixels = self._convert_tim_to_pixels(tim)
             
-            # Set image pixels
-            image.pixels = pixels
+            # Set image pixels using foreach_set for efficiency and type safety
+            image.pixels.foreach_set(list(pixels))  # type: ignore[attr-defined]
             image.use_fake_user = True  # Keep image in memory
             blender_images.append(image)
             
@@ -49,71 +50,53 @@ class BlenderTextureExporter:
         material.blend_method = 'HASHED'  # For transparency
         
         # Get node tree
-        nodes = material.node_tree.nodes
-        links = material.node_tree.links
+        nodes = material.node_tree.nodes  # type: ignore[attr-defined]
+        links = material.node_tree.links  # type: ignore[attr-defined]
         
         # Clear default nodes
-        nodes.clear()
+        nodes.clear()  # type: ignore[attr-defined]
         
         # Create output node
-        output = nodes.new('ShaderNodeOutputMaterial')
+        output = nodes.new('ShaderNodeOutputMaterial')  # type: ignore[attr-defined]
         output.location = (300, 0)
         
         # Create shader node
-        shader = nodes.new('ShaderNodeBsdfPrincipled')
+        shader = nodes.new('ShaderNodeBsdfPrincipled')  # type: ignore[attr-defined]
         shader.location = (0, 0)
         
-        # Create UV map node
-        uv_map = nodes.new('ShaderNodeUVMap')
-        uv_map.location = (-600, 0)
-        
         # Connect shader to output
-        links.new(shader.outputs['BSDF'], output.inputs['Surface'])
+        links.new(shader.outputs['BSDF'], output.inputs['Surface'])  # type: ignore[attr-defined]
         
-        # Add textures
-        last_node = shader
+        last_color = None
+        last_alpha = None
+        
         for i, image in enumerate(images):
-            # Create texture node
-            tex = nodes.new('ShaderNodeTexImage')
-            tex.image = image
-            tex.extension = 'CLIP'
+            tex = nodes.new('ShaderNodeTexImage')  # type: ignore[attr-defined]
+            tex.image = image  # type: ignore[attr-defined]
+            tex.extension = 'CLIP'  # type: ignore[attr-defined]
             tex.location = (-300, -i * 200)
             
-            # Create mapping node
-            mapping = nodes.new('ShaderNodeMapping')
-            mapping.vector_type = 'TEXTURE'
-            mapping.inputs['Location'].default_value[1] = i  # Offset V coordinate
-            mapping.location = (-450, -i * 200)
-            
-            # Connect nodes
-            links.new(uv_map.outputs['UV'], mapping.inputs['Vector'])
-            links.new(mapping.outputs['Vector'], tex.inputs['Vector'])
-            
             if i == 0:
-                # First texture connects directly to shader
-                links.new(tex.outputs['Color'], shader.inputs['Base Color'])
-                links.new(tex.outputs['Alpha'], shader.inputs['Alpha'])
+                links.new(tex.outputs['Color'], shader.inputs['Base Color'])  # type: ignore[attr-defined]
+                links.new(tex.outputs['Alpha'], shader.inputs['Alpha'])  # type: ignore[attr-defined]
+                last_color = tex
+                last_alpha = tex
             else:
-                # Create mix nodes for additional textures
-                mix_color = nodes.new('ShaderNodeMixRGB')
-                mix_color.blend_type = 'MIX'
+                mix_color = nodes.new('ShaderNodeMixRGB')  # type: ignore[attr-defined]
+                mix_color.blend_type = 'MIX'  # type: ignore[attr-defined]
                 mix_color.location = (-150, -i * 200)
-                
-                mix_alpha = nodes.new('ShaderNodeMixRGB')
-                mix_alpha.blend_type = 'MIX'
+                links.new(last_color.outputs['Color'], mix_color.inputs[1])  # type: ignore[attr-defined]
+                links.new(tex.outputs['Color'], mix_color.inputs[2])  # type: ignore[attr-defined]
+                links.new(mix_color.outputs['Color'], shader.inputs['Base Color'])  # type: ignore[attr-defined]
+                last_color = mix_color
+
+                mix_alpha = nodes.new('ShaderNodeMixRGB')  # type: ignore[attr-defined]
+                mix_alpha.blend_type = 'MIX'  # type: ignore[attr-defined]
                 mix_alpha.location = (-150, -i * 200 - 100)
-                
-                # Connect mix nodes
-                links.new(last_node.outputs['Base Color'], mix_color.inputs[1])
-                links.new(tex.outputs['Color'], mix_color.inputs[2])
-                links.new(last_node.outputs['Alpha'], mix_alpha.inputs[1])
-                links.new(tex.outputs['Alpha'], mix_alpha.inputs[2])
-                
-                # Connect to shader
-                links.new(mix_color.outputs['Color'], shader.inputs['Base Color'])
-                links.new(mix_alpha.outputs['Color'], shader.inputs['Alpha'])
-                
-                last_node = mix_color
+                links.new(last_alpha.outputs['Alpha'], mix_alpha.inputs[1])  # type: ignore[attr-defined]
+                links.new(tex.outputs['Alpha'], mix_alpha.inputs[2])  # type: ignore[attr-defined]
+                links.new(mix_alpha.outputs['Color'], shader.inputs['Alpha'])  # type: ignore[attr-defined]
+                last_alpha = mix_alpha
         
         return material
     
@@ -127,11 +110,11 @@ class BlenderTextureExporter:
         Returns:
             List of RGBA values (0-1) for each pixel
         """
-        pixels = []
+        pixels: List[float] = []
         
-        if tim.header.has_palette:
+        if tim.palette_data:
             # Indexed color mode
-            palette = self._parse_palette(tim.palette_data, tim.header.bpp)
+            palette: List[List[float]] = self._parse_palette(tim.palette_data, tim.header.bpp)
             
             # Convert image data using palette
             for byte in tim.image_data:
@@ -140,14 +123,14 @@ class BlenderTextureExporter:
                     for i in range(2):
                         index = (byte >> (4 * (1-i))) & 0x0F
                         if index < len(palette):
-                            pixels.extend(palette[index])
+                            pixels.extend(palette[index])  # type: ignore[reportGeneralTypeIssues]
                         else:
-                            pixels.extend([0, 0, 0, 0])
+                            pixels.extend([0, 0, 0, 0])  # type: ignore[reportGeneralTypeIssues]
                 else:  # 8-bit indexed
                     if byte < len(palette):
-                        pixels.extend(palette[byte])
+                        pixels.extend(palette[byte])  # type: ignore[reportGeneralTypeIssues]
                     else:
-                        pixels.extend([0, 0, 0, 0])
+                        pixels.extend([0, 0, 0, 0])  # type: ignore[reportGeneralTypeIssues]
         else:
             # Direct color mode
             for i in range(0, len(tim.image_data), 2):
@@ -158,7 +141,7 @@ class BlenderTextureExporter:
                     g = ((color >> 5) & 0x1F) / 31.0
                     b = (color & 0x1F) / 31.0
                     a = 1.0 if (color >> 15) else 0.0
-                    pixels.extend([r, g, b, a])
+                    pixels.extend([r, g, b, a])  # type: ignore[reportGeneralTypeIssues]
         
         return pixels
     
@@ -173,7 +156,7 @@ class BlenderTextureExporter:
         Returns:
             List of RGBA colors (0-1)
         """
-        palette = []
+        palette: List[List[float]] = []
         entries = 16 if bpp == 4 else 256
         
         for i in range(0, len(palette_data), 2):
@@ -187,6 +170,6 @@ class BlenderTextureExporter:
                 g = ((color >> 5) & 0x1F) / 31.0
                 b = (color & 0x1F) / 31.0
                 a = 1.0 if (color >> 15) else 0.0
-                palette.append([r, g, b, a])
+                palette.append([r, g, b, a])  # type: ignore[reportGeneralTypeIssues]
         
         return palette 
