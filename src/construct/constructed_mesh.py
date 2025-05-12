@@ -124,10 +124,10 @@ class ConstructedMesh:
     def construct_faces(self, formatted_faces: List[FormattedFace]) -> List[List[int]]:
         faces: List[List[int]] = []
         for face in formatted_faces:
-            if face.v4 is None:
-                faces.append([face.v1, face.v2, face.v3])
-            else:
-                faces.append([face.v1, face.v2, face.v3, face.v4])
+          if face.is_triangle:
+              faces.append([face.v1, face.v2, face.v3])
+          elif face.v4 is not None:
+              faces.append([face.v1, face.v2, face.v3, face.v4])
         return faces
 
     def __repr__(self) -> str:

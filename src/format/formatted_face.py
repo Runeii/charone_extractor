@@ -6,6 +6,8 @@ from src.parse.model.face import Face
 class FormattedFace:
   """Reorder vertices to match the order in the MCH2Blend format"""
 
+  is_triangle: bool = field(init=False)
+
   v1: int = field(init=False)
   v2: int = field(init=False)
   v3: int = field(init=False)
@@ -18,6 +20,8 @@ class FormattedFace:
   vt4: int | None = field(init=False)  # UV index for v4
   
   def __init__(self, face: Face):
+    self.is_triangle = face.opcode == 620824071
+
     # Order vertices to match MCH2Blend format
     self.v1 = face.vertices[1]  # Second vertex
     self.v2 = face.vertices[0]  # First vertex
