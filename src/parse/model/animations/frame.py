@@ -17,9 +17,9 @@ class Frame:
     stream = BytesIO(self.data)
     
     self.coordinate_offset = [
-      BinaryReader.read_int16(stream),
-      BinaryReader.read_int16(stream),
-      BinaryReader.read_int16(stream)
+      BinaryReader.read_uint16(stream),
+      BinaryReader.read_uint16(stream),
+      BinaryReader.read_uint16(stream)
     ]
 
     self.poses = self.parse_poses(self.bone_count, 6)
