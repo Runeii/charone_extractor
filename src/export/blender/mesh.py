@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Object
 from typing import List
+import json
 import bmesh
 
 from src.construct.constructed_mesh import ConstructedMesh
@@ -57,17 +58,17 @@ class BlenderMeshExporter:
             formatted_face = mesh_data.formatted_faces[i]
             
             if len(face.loops) == 3:  # Triangle
-                face.loops[0][uv_layer].uv = (mesh_data.uvs[formatted_face.vt1]["u"], 
-                                             mesh_data.uvs[formatted_face.vt1]["v"])
-                face.loops[1][uv_layer].uv = (mesh_data.uvs[formatted_face.vt2]["u"], 
+                face.loops[0][uv_layer].uv = (mesh_data.uvs[formatted_face.vt2]["u"], 
                                              mesh_data.uvs[formatted_face.vt2]["v"])
+                face.loops[1][uv_layer].uv = (mesh_data.uvs[formatted_face.vt1]["u"], 
+                                             mesh_data.uvs[formatted_face.vt1]["v"])
                 face.loops[2][uv_layer].uv = (mesh_data.uvs[formatted_face.vt3]["u"], 
                                              mesh_data.uvs[formatted_face.vt3]["v"])
             elif len(face.loops) == 4:  # Quad
-                face.loops[0][uv_layer].uv = (mesh_data.uvs[formatted_face.vt1]["u"], 
-                                             mesh_data.uvs[formatted_face.vt1]["v"])
-                face.loops[1][uv_layer].uv = (mesh_data.uvs[formatted_face.vt2]["u"], 
+                face.loops[0][uv_layer].uv = (mesh_data.uvs[formatted_face.vt2]["u"], 
                                              mesh_data.uvs[formatted_face.vt2]["v"])
+                face.loops[1][uv_layer].uv = (mesh_data.uvs[formatted_face.vt1]["u"], 
+                                             mesh_data.uvs[formatted_face.vt1]["v"])
                 face.loops[2][uv_layer].uv = (mesh_data.uvs[formatted_face.vt3]["u"], 
                                              mesh_data.uvs[formatted_face.vt3]["v"])
                 face.loops[3][uv_layer].uv = (mesh_data.uvs[formatted_face.vt4]["u"], 
