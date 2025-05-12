@@ -4,6 +4,7 @@ from src.format.formatted_bone import FormattedBone
 from src.format.formatted_skin import FormattedSkin
 from src.format.animations.formatted_animation import FormattedAnimation
 from src.format.bone_names import get_bone_name
+from src.format.animations.root_bone_pose import RootBonePose
 from .constructed_animation import ConstructedAnimation
 from .types import BoneData
 import math
@@ -45,10 +46,17 @@ class ConstructedSkeleton:
         self.rest_pose = constructed_animation.get_rest_pose()
         
         # Calculate bone positions from rest pose rotations
-        self._calculate_bone_positions()
+        self._calculate_bone_positions(rest_animation)
 
-    def _calculate_bone_positions(self) -> None:
+    def _calculate_bone_positions(self, rest_animation: FormattedAnimation) -> None:
         """Calculate bone positions (head/tail) and roll values from rest pose rotations."""
+
+        for item in rest_animation.frames:
+          print("is of type:", type(item).__name__)
+        # Get the animation offset from the first frame of the rest animation
+        root_pose: RootBonePose = rest_animation.frames[0].poses[0]
+        print("first_frame", "is of type:", type(root_pose).__name__)
+        offset = root_pose.location
         for i, _ in enumerate(self.bones):
             # Get rotation from rest pose
             rotation = self.rest_pose[i]
@@ -66,6 +74,9 @@ class ConstructedSkeleton:
             # Set head position
             if i == 0:  # Root bone
                 self.bones[i]["head"] = [0.0, 0.0, 0.0]
+                # For root bone, use the animation offset to determine length
+                # Calculate length from offset vector, matching other implementation
+                self.bones[i]["length"] = Vector((offset[1], offset[0], offset[2])).length
             else:
                 parent_idx = self.bones[i]["parent"]
                 if parent_idx is not None and 0 <= parent_idx < len(self.bones):
