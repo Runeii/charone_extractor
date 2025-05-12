@@ -45,13 +45,6 @@ def process_file(filepath: str) -> None:
         # Construct stage
         constructed_model = ConstructedModel(formatted_model=formatted_model)
         print(f"Model {constructed_model.name} constructed successfully")
-
-        # Export stage
-        # Since we know there's only one mesh per model, we can safely use index 0
-        model_data: Tuple[ConstructedMesh, ConstructedSkeleton, List[ConstructedAnimation]] = (
-            constructed_model.meshes[0],
-            constructed_model.skeleton,
-            constructed_model.animations
-        )
-        _ = blender_exporter.export(model_data)  # Store result in _ since we don't use it
+        
+        blender_exporter.export(constructed_model)
         print(f"Model {constructed_model.name} exported to Blender successfully")

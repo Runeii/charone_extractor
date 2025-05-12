@@ -17,6 +17,7 @@ class ConstructedModel:
         self.skeleton = self.construct_skeleton(formatted_model)
         self.meshes = self.construct_meshes(formatted_model)
         self.animations = self.construct_animations(formatted_model)
+        self.textures = formatted_model.textures
 
     def construct_meshes(self, formatted_model: FormattedModel) -> List[ConstructedMesh]:
         return [ConstructedMesh(

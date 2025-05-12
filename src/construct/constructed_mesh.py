@@ -8,17 +8,17 @@ import math
 
 @dataclass(init=False)
 class ConstructedMesh:
-    vertices: List[Dict[str, float]]  # List of {x, y, z} positions
-    uvs: List[Dict[str, float]]       # List of {u, v} coordinates
-    indices: List[int]                # Triangle indices
+    vertices: List[Dict[str, float]] 
+    uvs: List[Dict[str, float]]
+    faces: List[List[int]]
     
     def __init__(self, formatted_faces: List[FormattedFace], 
                  formatted_vertices: List[FormattedVertex],
                  skeleton: ConstructedSkeleton):
-        # First construct vertices in order of skin groups
+
         self.vertices = self.construct_vertices(formatted_vertices, skeleton.skins)
         self.uvs = self.construct_uvs(formatted_faces)
-        self.indices = self.construct_indices(formatted_faces)
+        self.faces = self.construct_faces(formatted_faces)
 
     def construct_vertices(self, formatted_vertices: List[FormattedVertex], skins: List[FormattedSkin]) -> List[Dict[str, float]]:
         """Construct vertices from MCH format data, ordered by skin groups.
@@ -46,9 +46,17 @@ class ConstructedMesh:
 
     def _calculate_uv(self, u: int, v: int, tgroup: List[int]) -> Dict[str, float]:
         """Calculate UV coordinates with texture group offsets and scaling."""
+        # First invert V coordinate
+        v = 128 - v
+        
+        # Apply texture group offset
+        u += tgroup[0] * 128
+        v += tgroup[1] * 128
+        
+        # Scale coordinates
         return {
-            "u": (u + tgroup[0] * 128) / 128,
-            "v": ((128 - v) + tgroup[1] * 128) / 128
+            "u": u / 128,
+            "v": v / 128
         }
 
     def construct_uvs(self, formatted_faces: List[FormattedFace]) -> List[Dict[str, float]]:
@@ -59,8 +67,7 @@ class ConstructedMesh:
             
             # Process UVs in correct order: v2, v1, v3, v4
             coords = face.texture_coords
-            if len(coords) >= 3:  # At least a triangle
-                # Add UVs in v2, v1, v3 order
+            if len(coords) >= 3:
                 uvs.extend([
                     self._calculate_uv(coords[0][0], coords[0][1], tgroup),  # v2
                     self._calculate_uv(coords[1][0], coords[1][1], tgroup),  # v1
@@ -70,18 +77,17 @@ class ConstructedMesh:
                 # Add v4 if quad
                 if len(coords) == 4:
                     uvs.append(self._calculate_uv(coords[3][0], coords[3][1], tgroup))
-                    
+
         return uvs
 
-    def construct_indices(self, formatted_faces: List[FormattedFace]) -> List[int]:
-        indices: List[int] = []
+    def construct_faces(self, formatted_faces: List[FormattedFace]) -> List[List[int]]:
+        faces: List[List[int]] = []
         for face in formatted_faces:
             if face.v4 is None:
-                indices.extend([face.v1, face.v2, face.v3])
+                faces.append([face.v1, face.v2, face.v3])
             else:
-                indices.extend([face.v1, face.v2, face.v3])
-                indices.extend([face.v1, face.v3, face.v4])
-        return indices
+                faces.append([face.v1, face.v2, face.v3, face.v4])
+        return faces
 
     def __repr__(self) -> str:
-        return f"ConstructedMesh: {len(self.vertices)} vertices, {len(self.indices)//3} triangles" 
+      return f"ConstructedMesh: {len(self.vertices)} vertices, {len(self.faces)} faces" 
