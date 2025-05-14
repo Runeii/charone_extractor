@@ -131,11 +131,9 @@ def get_bone_name(index: int, model_name: str) -> str:
         Bone name
     """
     if model_name and model_name in CHARACTER_BONE_SEQUENCES:
-        print("Got sequence for: ", model_name)
         sequence = CHARACTER_BONE_SEQUENCES[model_name]
         # Find the index of the VALUE of index in the sequence
         bone_index = sequence.index(index)
-        print("Bone index: ", bone_index)
         return BONE_NAMES[bone_index]
       
     print("Unknown bone: ", model_name, index)

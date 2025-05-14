@@ -15,7 +15,7 @@ from .formatted_face import FormattedFace
 from .formatted_vertex import FormattedVertex
 from .formatted_skin import FormattedSkin
 from .animations.formatted_animation import FormattedAnimation
-
+from .formatted_rest_pose import FormattedRestPose
 @dataclass(init=False)
 class FormattedModel:
   name: str
@@ -28,6 +28,8 @@ class FormattedModel:
   bones: List[FormattedBone]
   faces: List[FormattedFace]
   vertices: List[FormattedVertex]
+
+  rest_pose: FormattedRestPose
 
   def __init__(self, model: ModelParser):
     self.name = model.header.model_name.replace("x", "")
@@ -45,6 +47,8 @@ class FormattedModel:
       animations=model.model_data.animations,
       bones=self.bones
     )
+
+    self.rest_pose = FormattedRestPose(model.model_data.rest_animation)
 
   def sanitise_bones(self, bones: List[Bone]) -> List[FormattedBone]:
     return list(map(lambda bone : FormattedBone(bone), bones))

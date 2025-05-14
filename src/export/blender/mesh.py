@@ -101,7 +101,7 @@ class BlenderMeshExporter:
         """
         # Create vertex groups for each bone
         for i, bone in enumerate(skeleton_data.bones):
-            group = mesh_obj.vertex_groups.new(name=bone["name"])
+            group = mesh_obj.vertex_groups.new(name=bone.name)
             
             # First set all vertices to weight 0
             all_vertices = list(range(len(mesh_obj.data.vertices)))

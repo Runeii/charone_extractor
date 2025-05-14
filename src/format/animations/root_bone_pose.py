@@ -14,6 +14,6 @@ class RootBonePose(BonePose):
     
     self.location = [
         offset[0],
+        offset[1],
         offset[2] - bone_length/256,
-        offset[1]
     ]
