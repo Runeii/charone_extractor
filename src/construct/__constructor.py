@@ -1,16 +1,18 @@
 from dataclasses import dataclass
 from typing import List
+
 from src.format.formatted_model import FormattedModel
 from .constructed_mesh import ConstructedMesh
 from .constructed_skeleton import ConstructedSkeleton
 from .constructed_animation import ConstructedAnimation
-
+from ..parse.model.tim import TIM
 @dataclass(init=False)
 class ConstructedModel:
     name: str
     meshes: List[ConstructedMesh]
     skeleton: ConstructedSkeleton
     animations: List[ConstructedAnimation]
+    textures: List[TIM]
     
     def __init__(self, formatted_model: FormattedModel):
         self.name = formatted_model.name
