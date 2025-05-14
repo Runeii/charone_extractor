@@ -21,7 +21,7 @@ class ModelParser:
 
   def parse_main_character_model(self, name: str, char_one_data: bytes):
     sanitised_name = name.replace("x", "")
-    with open(f"./INPUT/models/{sanitised_name}.mch", "rb") as f:
+    with open(f"./INPUT/{sanitised_name}.mch", "rb") as f:
       data = f.read()
 
     mch_header = MCHHeader(data[:256])

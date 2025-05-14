@@ -135,6 +135,6 @@ def get_bone_name(index: int, model_name: str) -> str:
         # Find the index of the VALUE of index in the sequence
         bone_index = sequence.index(index)
         return BONE_NAMES[bone_index]
-      
+
     print("Unknown bone: ", model_name, index)
     return "N"

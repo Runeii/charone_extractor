@@ -72,7 +72,6 @@ class ModelData:
     self.animations = AnimationsParser(model_name=self.name, data=animation_data)
 
     # Rest Animation is always in MCH
-    print(len(self.data), offset_of_animation_data, len(self.data[offset_of_animation_data:]))
     rest_animation_data = self.data[offset_of_animation_data + 2:]
     self.rest_animation = self.parse_rest_pose(rest_animation_data)
 

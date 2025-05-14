@@ -1,13 +1,9 @@
 import os
-from typing import Tuple, List
 
 from src.parse.headers.__parser import HeaderParser
 from src.parse.model.__parser import ModelParser
 from src.format.formatted_model import FormattedModel
 from src.construct.__constructor import ConstructedModel
-from src.construct.constructed_mesh import ConstructedMesh
-from src.construct.constructed_skeleton import ConstructedSkeleton
-from src.construct.constructed_animation import ConstructedAnimation
 from src.export.__exporter import BlenderExporter
 
 def process_file(filepath: str) -> None:
@@ -27,12 +23,19 @@ def process_file(filepath: str) -> None:
 
     # Initialize Blender exporter
     blender_exporter = BlenderExporter()
+    
+    # Get the directory of the input file
+    file_directory = os.path.dirname(filepath)
 
-    for index, model_header in enumerate(model_headers.model_headers):
-        if index > 0:
-            return
-            
-        print(f"Processing model {model_header.model_name}")
+    for _, model_header in enumerate(model_headers.model_headers):
+        model_name = model_header.model_name
+        print(f"Processing model {model_name}")
+        
+        # Check if a file with model name exists in the same folder
+        model_file_path = os.path.join(file_directory, f"{model_name.replace('x', '')}.mch")
+        if (model_name.startswith('d') == False) or (os.path.exists(model_file_path) == False):
+          print(f"MCH file {model_name} doesn't exist at {model_file_path}, skipping")
+          continue
         
         # Parse stage
         model = ModelParser(header=model_header, data=file_data)

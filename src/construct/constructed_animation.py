@@ -84,11 +84,11 @@ class ConstructedAnimation:
             time = frame_index / 30.0
             
             joint_transforms: List[JointTransform] = []
-            
+
             for bone_index, pose in enumerate(frame.poses):
                 rotation = [pose.x, pose.y, pose.z]
                 rotation = self.get_keyframe_rotation(bones[bone_index].name, rotation)
-                
+
                 transform = JointTransform(
                     bone_index=bone_index,
                     bone_name=bones[bone_index].name,

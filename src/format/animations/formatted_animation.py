@@ -26,4 +26,5 @@ class FormattedAnimation:
       frame = FormattedFrame(frame_data, bones)
       parsed_frames.append(frame)
     
+    
     return parsed_frames
