@@ -88,10 +88,13 @@ class ConstructedAnimation:
                 rotation = [pose.x, pose.y, pose.z]
                 rotation = self.get_keyframe_rotation(bones[bone_index].name, rotation)
 
+                #TODO: fix this to be accurate for root bone, but 0 is fine for now
+                location = [0.0, 0.0, 0.0]
+
                 transform = JointTransform(
                     bone_index=bone_index,
                     bone_name=bones[bone_index].name,
-                    location=pose.location if isinstance(pose, RootBonePose) else None,
+                    location=location,
                     rotation=rotation
                 )
                 
@@ -106,14 +109,14 @@ class ConstructedAnimation:
         return keyframes
 
     def get_keyframe_rotation(self, bone_name: str, rotation: List[float]) -> List[float]:
-        eul = Euler((-rotation[1], -rotation[0], rotation[2]), 'YXZ')
+        eul = Euler((-rotation[0], -rotation[1], rotation[2]), 'YXZ')
 
         # Apply special rotations based on bone name
         if bone_name == "root":
             eul=Euler((0,0,0), 'YXZ')
         if bone_name == "upperbody":
-            eul.rotate(Euler((0, 0, math.radians(-90)), 'YXZ'))
             eul.rotate(Euler((math.radians(180), 0, 0), 'YXZ'))
+            eul.rotate(Euler((0, 0, math.radians(-90)), 'YXZ'))
         if bone_name == "lowerbody":
             eul.rotate(Euler((0, 0, math.radians(-90)), 'YXZ'))
         elif bone_name == "breast_R" or bone_name == "breast_L":
