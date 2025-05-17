@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional
 from src.format.animations.formatted_animation import FormattedAnimation
 from ..format.animations.root_bone_pose import RootBonePose
-from ..format.formatted_rest_pose import FormattedRestPose, FormattedRestPoseBoneRotation
 import math
 from mathutils import Euler
 from .constructed_bone import ConstructedBone

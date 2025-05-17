@@ -8,7 +8,7 @@ class Bone:
   
   Structure:
   - parent_bone (2 bytes): SHORT - parent bone ID (1-based, -1 if no parent)
-  - parent_bone_offset (2 bytes): SHORT - unknown value
+  - parent_bone_data_offset (2 bytes): SHORT - unknown value
   - unknown2 (4 bytes): DWORD - unknown value
   - bone_length (2 bytes): SHORT - length of bone (needs special handling for negative values)
   - empty_data (54 bytes): 54 bytes - empty values
@@ -17,7 +17,7 @@ class Bone:
 
   parent_bone: int = field(init=False)
   bone_length: int = field(init=False)
-  parent_bone_offset: int = field(init=False) # wiki needs update: this is parent bone offset! (so multiple of 64)
+  parent_bone_data_offset: int = field(init=False) # wiki needs update: this is parent bone offset! (so multiple of 64)
   unknown2: int = field(init=False) # always 0x0 / 0?
   empty_data: bytes = field(init=False)
 
@@ -28,7 +28,7 @@ class Bone:
 
     self.parent_bone = BinaryReader.read_uint16(stream)
 
-    self.parent_bone_offset = BinaryReader.read_uint16(stream)
+    self.parent_bone_data_offset = BinaryReader.read_uint16(stream)
     self.unknown2 = BinaryReader.read_uint32(stream)
     
     self.bone_length = BinaryReader.read_uint16(stream) # wiki incorrectly states this is uint16

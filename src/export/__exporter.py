@@ -42,7 +42,7 @@ class BlenderExporter:
         return mesh_obj, armature_obj 
       
     def setViewPreferences(self, armature_obj: Object):
-      armature_obj.data.pose_position    = 'POSE'
+      armature_obj.data.pose_position    = 'REST'
 
       armature_obj.data.display_type     = 'WIRE'
 

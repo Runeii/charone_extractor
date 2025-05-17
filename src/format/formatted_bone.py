@@ -18,11 +18,14 @@ class FormattedBone:
 
   parent_bone: int = field(init=False)
   bone_length: float = field(init=False)
+  unknown2: int = field(init=False)
 
-  parent_bone_offset: int = field(init=False) # wiki needs update: this is parent bone offset! (so multiple of 64)
+  parent_bone_data_offset: int = field(init=False) # wiki needs update: this is parent bone offset! (so multiple of 64)
 
   def __post_init__(self):
     self.parent_bone = self.bone.parent_bone - 1
     self.bone_length = self.bone.bone_length
+    
+    self.unknown2 = self.bone.unknown2
 
-    self.parent_bone_offset = self.bone.parent_bone_offset  # currently unused
+    self.parent_bone_data_offset = self.bone.parent_bone_data_offset  # currently unused
