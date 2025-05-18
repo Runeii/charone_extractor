@@ -7,10 +7,10 @@ from src.construct.constructed_skeleton import ConstructedSkeleton
 class BlenderArmatureExporter:
     """Handles creation and setup of Blender armatures"""
     
-    def create_armature(self, skeleton_data: ConstructedSkeleton) -> Object:
+    def create_armature(self, skeleton_data: ConstructedSkeleton, name: str) -> Object:
       # Create armature and object
-      armature = bpy.data.armatures.new(name="armature")
-      obj = bpy.data.objects.new("armature", armature)
+      armature = bpy.data.armatures.new(name=name)
+      obj = bpy.data.objects.new(name, armature)
       
       # Link to scene
       bpy.context.scene.collection.objects.link(obj)
