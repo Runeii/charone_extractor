@@ -124,12 +124,17 @@ class BlenderAnimationExporter:
         if not armature_obj.animation_data:
             armature_obj.animation_data_create()
             
+        # Store the action in Blender's action data
+        action.use_fake_user = True  # Keep the action in memory
+        
+        # Set up animation settings
+        action.use_cyclic = True  # Make the animation loop
+
         armature_obj.animation_data.action = action
         
         if animation_data.keyframes:
-          last_keyframe = animation_data.keyframes[-1]
-          bpy.context.scene.frame_start = 0
-          bpy.context.scene.frame_end = animation_data.frame_count - 1
+            # Set frame range for this action
+            action.frame_range = (0, animation_data.frame_count - 1)
             
         for bone in armature_obj.pose.bones:
             bone.rotation_mode = 'YXZ'
