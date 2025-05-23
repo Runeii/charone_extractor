@@ -35,6 +35,7 @@ addon_dir = os.path.dirname(os.path.realpath(__file__))
 if addon_dir not in sys.path:
     sys.path.insert(0, addon_dir)
 
+from bpy.props import StringProperty
 from bpy_extras.io_utils import ImportHelper
 from bpy.types import Context, Panel
 
