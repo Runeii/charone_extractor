@@ -27,9 +27,9 @@ from bpy.types import Context, Panel
 from src.main import process_file
 
 class ImportCharOne(bpy.types.Operator, ImportHelper):
-    """Import from CharOne (.one)"""
-    bl_idname = "import.charone"
-    bl_label = "Import CharOne"
+    """Import from CharaOne (.one)"""
+    bl_idname = "import.charaone"
+    bl_label = "Import CharaOne"
     bl_options = {'REGISTER', 'UNDO'}
 
     filename_ext = ".one"
