@@ -44,5 +44,9 @@ class ModelHeader:
       self.model_data_offset = BinaryReader.read_uint32(stream)
     
     self.model_name = BinaryReader.read_string(stream)
+    
+    ## NOTE: We typically keep all data manipulation out of the parse stage.
+    ## But in this case we need to clean the model name to be able to find the MCH file.
+    self.model_name = self.model_name.replace('HXh', '').replace('x', '')
 
     _spacer = BinaryReader.read_uint32(stream)

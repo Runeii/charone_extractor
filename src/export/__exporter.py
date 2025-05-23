@@ -12,10 +12,13 @@ class BlenderExporter:
     """Main class for exporting constructed model data to Blender"""
     
     def __init__(self):
-        self.mesh_exporter = BlenderMeshExporter()
-        self.armature_exporter = BlenderArmatureExporter()
-        self.animation_exporter = BlenderAnimationExporter()
-        self.scene_exporter = BlenderSceneExporter()
+      bpy.ops.object.select_all(action='SELECT')
+      bpy.ops.object.delete(use_global=False)
+      
+      self.mesh_exporter = BlenderMeshExporter()
+      self.armature_exporter = BlenderArmatureExporter()
+      self.animation_exporter = BlenderAnimationExporter()
+      self.scene_exporter = BlenderSceneExporter()
         
     def export(self, constructed_model: ConstructedModel) -> Tuple[Object, Object]:
         mesh_obj = self.mesh_exporter.create_mesh(
