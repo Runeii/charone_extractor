@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from src.parse.model.bone import Bone
-from typing import Tuple
 
 @dataclass
 class FormattedBone:
