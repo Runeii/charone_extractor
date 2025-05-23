@@ -8,12 +8,12 @@ from .bone_pose import BonePose
 class RootBonePose(BonePose):
   location: List[float]
 
-  def __init__(self, pose: Pose, offset: List[float], bone_length: float):
+  def __init__(self, pose: Pose, offset: List[float]):
     # Call the parent class constructor
     super().__init__(original=pose)
     
     self.location = [
         offset[0],
         offset[1],
-        offset[2] - bone_length/256,
+        offset[2],
     ]

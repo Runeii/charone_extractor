@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from src.parse.model.animations.pose import Pose
-from math import pi
 
 @dataclass(init=False)
 class BonePose:
@@ -13,10 +12,10 @@ class BonePose:
     raw_y = self.decode_rotation(original.byte3, 0b00110000, original.byte4, 4)
     raw_z = self.decode_rotation(original.byte1, 0b00000011, original.byte4, 8)
 
-    # Convert to radians using decimal values
-    self.x = pi * raw_x / 2048
-    self.y = pi * raw_y / 2048
-    self.z = pi * raw_z / 2048
+    # Convert to degrees
+    self.x = raw_x * (180.0 / 2048)
+    self.y = raw_y * (180.0 / 2048)
+    self.z = raw_z * (180.0 / 2048)
     
   def decode_rotation(self, low_byte: int, high_byte_mask: int, high_byte: int, shift: int) -> int:
     # Combine the low byte with masked & shifted high byte

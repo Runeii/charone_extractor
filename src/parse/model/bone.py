@@ -31,7 +31,7 @@ class Bone:
     self.parent_bone_data_offset = BinaryReader.read_uint16(stream)
     self.unknown2 = BinaryReader.read_uint32(stream)
     
-    self.bone_length = BinaryReader.read_uint16(stream) # wiki incorrectly states this is uint16
+    self.bone_length = BinaryReader.read_uint16(stream) 
 
     # Handle negative bone lengths properly
     if self.bone_length > 32768:

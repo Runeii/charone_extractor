@@ -2,18 +2,19 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional
 from src.format.animations.formatted_animation import FormattedAnimation
 from ..format.animations.root_bone_pose import RootBonePose
+from ..format.animations.bone_pose import BonePose
 import math
-from mathutils import Euler
+from mathutils import Euler, Quaternion
 from .constructed_bone import ConstructedBone
+
 @dataclass
 class JointTransform:
     """Represents a single joint/bone transform in a keyframe.
-    
     Attributes:
         bone_index: Index of the bone in the skeleton
         bone_name: Name of the bone
         location: Optional location [x, y, z] for root bone
-        rotation: Rotation [x, y, z] in radians in YXZ order
+        rotation: Rotation [x, y, z] in YXZ order
     """
     bone_index: int
     bone_name: str
@@ -23,7 +24,6 @@ class JointTransform:
 @dataclass
 class Keyframe:
     """Represents a single keyframe in the animation.
-    
     Attributes:
         time: Time in seconds when this keyframe occurs
         joint_transforms: List of joint transforms for this keyframe
@@ -34,7 +34,6 @@ class Keyframe:
 @dataclass(init=False)
 class ConstructedAnimation:
     """Constructs animation data from MCH format for Blender import.
-    
     Attributes:
         name: Name of the animation
         duration: Duration of the animation in seconds
@@ -43,98 +42,102 @@ class ConstructedAnimation:
     name: str
     duration: float
     keyframes: List[Keyframe]
-    
-    def __init__(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone]):
-        """Initialize animation from formatted data.
-        
-        Args:
-            formatted_animation: Animation data from MCH format
-            bones: List of bone data to get bone names from
-        """
+
+    def __init__(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone]) -> None:
+        """Initialize animation from formatted data."""
         self.name = formatted_animation.name
         self.duration = self.calculate_duration(formatted_animation)
         self.keyframes = self.construct_keyframes(formatted_animation, bones)
 
     def calculate_duration(self, formatted_animation: FormattedAnimation) -> float:
-        """Calculate animation duration in seconds.
-        
-        Args:
-            formatted_animation: Animation data from MCH format
-            
-        Returns:
-            Duration in seconds
-        """
-        # Each frame represents 1/30th of a second in FF8
+        """Calculate animation duration in seconds."""
         return formatted_animation.frame_count / 30.0
 
-    def construct_keyframes(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone]) -> List[Keyframe]:
-        """Construct keyframes from animation data.
+    def euler_to_quaternion(self, x: float, y: float, z: float) -> Quaternion:
+        """Convert XYZ Euler angles to quaternion in YXZ order"""
+        rad_x = math.radians(x)
+        rad_y = math.radians(y) 
+        rad_z = math.radians(z)
         
-        Args:
-            formatted_animation: Animation data from MCH format
-            bones: List of bone data to get bone names from
-            
-        Returns:
-            List of keyframes with joint transforms
+        euler = Euler((rad_x, rad_y, rad_z), 'YXZ')
+        return euler.to_quaternion()
+
+    def calculate_accumulated_rotations(self, frame_poses: List[BonePose], bones: List[ConstructedBone]) -> Dict[int, Quaternion]:
+        """Calculate accumulated rotations for all bones in this frame.
+        
+        Uses the same pattern as skeleton's combined_rotations calculation.
         """
+        combined_rotations: Dict[int, Quaternion] = {}
+        
+        for bone_index, pose in enumerate(frame_poses):
+            # Convert pose to quaternion
+            bone_quaternion = self.euler_to_quaternion(pose.x, pose.y, pose.z)
+            
+            # Root bone (special case)
+            if bone_index == 0:
+                combined_rotations[bone_index] = bone_quaternion
+            else:
+                # Get parent information
+                parent_id = bones[bone_index].parent
+                
+                # Safety check for invalid parent (same pattern as skeleton)
+                if parent_id is not None and (0 > parent_id or parent_id >= len(bones)):
+                    raise Exception(f"Parent bone index {parent_id} is out of range for bone {bones[bone_index].name}. Bones length: {len(bones)}")
+                
+                # Combine parent's rotation with this bone's rotation
+                if parent_id is not None and parent_id in combined_rotations:
+                    combined_rotations[bone_index] = combined_rotations[parent_id] @ bone_quaternion
+                else:
+                    # No valid parent - use own rotation
+                    combined_rotations[bone_index] = bone_quaternion
+                    
+        return combined_rotations
+
+    def construct_keyframes(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone]) -> List[Keyframe]:
+        """Construct keyframes from animation data using quaternions for rotation handling."""
         keyframes: List[Keyframe] = []
         
         for frame_index, frame in enumerate(formatted_animation.frames):
             time = frame_index / 30.0
             
+            # Calculate accumulated rotations for this frame (same pattern as skeleton)
+            combined_rotations = self.calculate_accumulated_rotations(frame.poses, bones)
+            
+            # Build joint transforms for this frame
             joint_transforms: List[JointTransform] = []
-
+            
             for bone_index, pose in enumerate(frame.poses):
-                rotation = [pose.x, pose.y, pose.z]
-                rotation = self.get_keyframe_rotation(bones[bone_index].name, rotation)
+                if bone_index == 0:
+                    local_quat = combined_rotations[bone_index]
+                else:
+                    parent_id = bones[bone_index].parent
+                    if parent_id is not None and parent_id in combined_rotations:
+                        parent_quat_inverse = combined_rotations[parent_id].conjugated()
+                        local_quat = parent_quat_inverse @ combined_rotations[bone_index]
+                    else:
+                        local_quat = combined_rotations[bone_index]
+                
 
-                #TODO: fix this to be accurate for root bone, but 0 is fine for now
-                location = [0.0, 0.0, 0.0]
+                euler = local_quat.to_euler('YXZ') 
+                rotation = [euler.x, euler.y, euler.z]
+              
+                location = None
+                if bone_index == 0 and isinstance(pose, RootBonePose):
+                    location = pose.location
+                    location = [0.0, 0.0, 0.0]
 
                 transform = JointTransform(
                     bone_index=bone_index,
                     bone_name=bones[bone_index].name,
                     location=location,
-                    rotation=rotation
+                   rotation=rotation
                 )
-                
                 joint_transforms.append(transform)
             
-            keyframe = Keyframe(
-                time=time,
-                joint_transforms=joint_transforms
-            )
+            keyframe = Keyframe(time=time, joint_transforms=joint_transforms)
             keyframes.append(keyframe)
         
         return keyframes
 
-    def get_keyframe_rotation(self, bone_name: str, rotation: List[float]) -> List[float]:
-        eul = Euler((-rotation[0], -rotation[1], rotation[2]), 'YXZ')
-
-        # Apply special rotations based on bone name
-        if bone_name == "root":
-            eul=Euler((0,0,0), 'YXZ')
-        if bone_name == "upperbody":
-            eul.rotate(Euler((math.radians(180), 0, 0), 'YXZ'))
-            eul.rotate(Euler((0, 0, math.radians(-90)), 'YXZ'))
-        if bone_name == "lowerbody":
-            eul.rotate(Euler((0, 0, math.radians(-90)), 'YXZ'))
-        elif bone_name == "breast_R" or bone_name == "breast_L":
-            eul.rotate(   Euler  ((0,math.radians(180),0), 'YXZ'))
-        elif bone_name in ["belt0", "belt1", "belt2", "belt4"]:
-            eul.rotate(Euler((0, math.radians(180), 0), 'YXZ'))
-        elif bone_name == "belt5":
-            eul.rotate(Euler((math.radians(90), 0, 0), 'YXZ'))
-        elif bone_name in ["dress1", "dress4"]:
-            eul.rotate(Euler((0, 0, math.radians(90)), 'YXZ'))
-        elif bone_name == "cape3":
-            eul.rotate(Euler((0, math.radians(180), 0), 'YXZ'))
-        elif bone_name == "hair5":
-            eul.rotate(Euler((0, math.radians(180), 0), 'YXZ'))
-        elif bone_name in ["collar0", "collar2"]:
-            eul.rotate(Euler((0, math.radians(180), 0), 'YXZ'))
-        
-        return [eul.x, eul.y, eul.z]
-
     def __repr__(self) -> str:
-        return f"ConstructedAnimation: {self.name} ({self.duration}s, {len(self.keyframes)} keyframes)" 
+        return f"ConstructedAnimation: {self.name} ({self.duration}s, {len(self.keyframes)} keyframes)"

@@ -138,11 +138,6 @@ class BlenderMeshExporter:
 										# Get the bone's rest position and rotation
 										bone_name = constructed_skeleton.bones[skin.bone_id].name
 										bone_head = Vector(armature_obj.data.bones[bone_name].head_local)
-										bone_rotation = constructed_skeleton.bones[skin.bone_id].rest_pose_rotation
-
-										if bone_rotation:
-												# Apply bone rotation to vertex
-												vert_pos.rotate(bone_rotation)
 
 										# Apply bone position
 										vert_pos += bone_head

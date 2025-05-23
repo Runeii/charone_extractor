@@ -9,7 +9,6 @@ from src.parse.model.texture_animation import TextureAnimation
 from io import BytesIO
 from src.parse.model.animations.__parser import AnimationsParser
 from src.utils.binary_reader import BinaryReader
-from src.parse.model.rest_pose import RestPose
 
 @dataclass
 class ModelData:
@@ -71,10 +70,6 @@ class ModelData:
 
     self.animations = AnimationsParser(model_name=self.name, data=animation_data)
 
-    # Rest Animation is always in MCH
-    rest_animation_data = self.data[offset_of_animation_data + 2:]
-    self.rest_animation = self.parse_rest_pose(rest_animation_data)
-
   def parse_bones(self, number_of_bones: int, offset_of_bones: int) -> List[Bone]:
     stream = BytesIO(self.data[offset_of_bones:])
     bones: List[Bone] = []
@@ -134,6 +129,3 @@ class ModelData:
       unknown_data_objects.append(unknown_data_object)
     
     return unknown_data_objects
-
-  def parse_rest_pose(self, rest_animation_data: bytes) -> RestPose:
-    return RestPose(rest_animation_data)

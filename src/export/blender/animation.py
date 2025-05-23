@@ -149,7 +149,7 @@ class BlenderAnimationExporter:
         # Set rotation mode for all bones
         for bone in armature_obj.pose.bones:
             bone.rotation_mode = 'YXZ'
-            
+
         # Update the F-curves
         for fcurve in action.fcurves:
             # Sort keyframes by time
