@@ -33,7 +33,7 @@ def process_file(filepath: str) -> None:
         
         # Check if a file with model name exists in the same folder
         model_file_path = os.path.join(file_directory, f"{model_name.replace('x', '')}.mch")
-        if (model_name.startswith('d') == False) or (os.path.exists(model_file_path) == False):
+        if (model_name.startswith('d') == True) and (os.path.exists(model_file_path) == False):
           print(f"MCH file {model_name} doesn't exist at {model_file_path}, skipping")
           continue
         

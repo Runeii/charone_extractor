@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from ..format.formatted_model import FormattedBone, FormattedModel
-from src.format.bone_names import get_bone_name
 from typing import List
 
 @dataclass(init=False)
@@ -17,12 +16,12 @@ class ConstructedBone:
   tail: List[float]
   roll: float
 
-  def __init__(self, formatted_model: FormattedModel, bone_index: int, model_name: str):
+  def __init__(self, formatted_model: FormattedModel, bone_index: int):
     formatted_bone = formatted_model.bones[bone_index]
 
     self.formatted_bone = formatted_bone
 
-    self.name = get_bone_name(bone_index, model_name)
+    self.name = "bone_" + str(bone_index)
     self.parent = formatted_bone.parent_bone if formatted_bone.parent_bone >= 0 else None
     self.length = formatted_bone.bone_length
 

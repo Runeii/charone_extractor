@@ -22,7 +22,7 @@ class ConstructedSkeleton:
         
     def construct_bones(self, formatted_model: FormattedModel) -> List[ConstructedBone]:
         formatted_bones = formatted_model.bones
-        return list(map(lambda i, _: ConstructedBone(formatted_model, i, self.name), range(len(formatted_bones)), formatted_bones))
+        return list(map(lambda i, _: ConstructedBone(formatted_model, i), range(len(formatted_bones)), formatted_bones))
 
     def calculate_bone_hierarchy(self) -> None:
         for bone in self.bones:
