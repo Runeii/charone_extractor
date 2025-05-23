@@ -12,14 +12,81 @@ class BlenderExporter:
     """Main class for exporting constructed model data to Blender"""
     
     def __init__(self):
-      bpy.ops.object.select_all(action='SELECT')
-      bpy.ops.object.delete(use_global=False)
-      
+      self.reset_blender()
+        
       self.mesh_exporter = BlenderMeshExporter()
       self.armature_exporter = BlenderArmatureExporter()
       self.animation_exporter = BlenderAnimationExporter()
       self.scene_exporter = BlenderSceneExporter()
-        
+    def reset_blender(self):
+      """
+      Completely reset Blender to default state
+      """
+      
+      # Clear existing mesh from memory
+      bpy.ops.object.select_all(action='SELECT')
+      bpy.ops.object.delete(use_global=False)
+      
+      # Clear all mesh data blocks
+      for mesh in bpy.data.meshes:
+          bpy.data.meshes.remove(mesh)
+      
+      # Clear all material data blocks
+      for material in bpy.data.materials:
+          bpy.data.materials.remove(material)
+          
+      # Clear all texture data blocks
+      for texture in bpy.data.textures:
+          bpy.data.textures.remove(texture)
+          
+      # Clear all image data blocks
+      for image in bpy.data.images:
+          bpy.data.images.remove(image)
+          
+      # Clear all camera data blocks
+      for camera in bpy.data.cameras:
+          bpy.data.cameras.remove(camera)
+          
+      # Clear all light data blocks  
+      for light in bpy.data.lights:
+          bpy.data.lights.remove(light)
+          
+      # Clear all armature data blocks
+      for armature in bpy.data.armatures:
+          bpy.data.armatures.remove(armature)
+          
+      # Clear all curve data blocks
+      for curve in bpy.data.curves:
+          bpy.data.curves.remove(curve)
+          
+      # Clear all animation data
+      for action in bpy.data.actions:
+          bpy.data.actions.remove(action)
+          
+      # Clear all collections (except master collection)
+      for collection in bpy.data.collections:
+          bpy.data.collections.remove(collection)
+          
+      # Reset timeline
+      scene = bpy.context.scene
+      scene.frame_start = 1
+      scene.frame_end = 250
+      scene.frame_current = 1
+      
+      # Clear all keyframes from scene
+      scene.animation_data_clear()
+      
+      # Reset world settings
+      if bpy.context.scene.world:
+          bpy.data.worlds.remove(bpy.context.scene.world)
+      
+      # Create new world
+      world = bpy.data.worlds.new("World")
+      bpy.context.scene.world = world
+      
+      
+      print("Blender reset complete!")
+
     def export(self, constructed_model: ConstructedModel) -> Tuple[Object, Object]:
         mesh_obj = self.mesh_exporter.create_mesh(
             mesh_data=constructed_model.meshes[0],
@@ -41,6 +108,12 @@ class BlenderExporter:
             self.animation_exporter.setup_keyframes(armature_obj, animation_data, action)
 
         self.setViewPreferences(armature_obj)
+        
+        # Select the armature object
+        bpy.ops.object.select_all(action='DESELECT')
+        armature_obj.select_set(True)
+        bpy.context.view_layer.objects.active = armature_obj
+        
         return mesh_obj, armature_obj 
       
     def setViewPreferences(self, armature_obj: Object):

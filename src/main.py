@@ -1,4 +1,5 @@
 import os
+import bpy
 
 from src.parse.headers.__parser import HeaderParser
 from src.parse.model.__parser import ModelParser
@@ -20,9 +21,6 @@ def process_file(filepath: str) -> None:
 
     model_headers = HeaderParser(file_data)
     print(f"Found {model_headers.model_count} models")
-
-    # Initialize Blender exporter
-    blender_exporter = BlenderExporter()
     
     # Get the directory of the input file
     file_directory = os.path.dirname(filepath)
@@ -37,6 +35,11 @@ def process_file(filepath: str) -> None:
           print(f"MCH file {model_name} doesn't exist at {model_file_path}, skipping")
           continue
         
+        existing_glb_path = os.path.join("/Users/andrew/Desktop/FF8/process/OUTPUT", f"{model_name}.glb")
+        if os.path.exists(existing_glb_path):
+          print(f"Skipping {model_name} because it already exists at {existing_glb_path}")
+          continue
+        
         # Parse stage
         model = ModelParser(header=model_header, data=file_data)
         print(f"Model {model.header.model_name} parsed successfully")
@@ -49,5 +52,18 @@ def process_file(filepath: str) -> None:
         constructed_model = ConstructedModel(formatted_model=formatted_model)
         print(f"Model {constructed_model.name} constructed successfully")
         
+        # Initialize Blender exporter
+        blender_exporter = BlenderExporter()
         blender_exporter.export(constructed_model)
         print(f"Model {constructed_model.name} exported to Blender successfully")
+        
+        bpy.app.debug_value = 2
+        bpy.ops.export_scene.gltf(
+            filepath="/Users/andrew/Desktop/FF8/process/OUTPUT/" + model_name + ".glb",
+            export_format="GLB",  # Export as .glb format
+            use_selection=False,  # Export only selected objects (meshes/armatures)
+            export_apply=True,  # Apply all transforms to the exported objects
+            export_animations=True,  # Include animations in export
+            export_force_sampling=True,  # Bake animations for compatibility
+        )
+        
