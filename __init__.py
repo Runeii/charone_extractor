@@ -1,6 +1,22 @@
+#*****************************************************************************#
+#    Copyright (C) 2025 A H                                                #
+#    Copyright (C) 2024 Shunsq                                                #
+#    Copyright (C) 2024 Julian Xhokaxhiu                                      #
+#                                                                             #
+#    This file is part of FF8 MCH                                             #
+#                                                                             #
+#    FF8 MCH is free software: you can redistribute it and/or modify          #
+#    it under the terms of the GNU General Public License as published by     #
+#    the Free Software Foundation, either version 3 of the License            #
+#                                                                             #
+#    FF8 MCH is distributed in the hope that it will be useful,               #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of           #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            #
+#    GNU General Public License for more details.                             #
+#*****************************************************************************#
 bl_info = {
     "name": "CharaOne Extractor",
-    "author": "Your Name",
+    "author": "A H,Shunsq,Julian Xhokaxhiu",
     "version": (1, 0),
     "blender": (4, 3, 0),
     "location": "File > Import > CharaOne (.one)",
@@ -19,7 +35,6 @@ addon_dir = os.path.dirname(os.path.realpath(__file__))
 if addon_dir not in sys.path:
     sys.path.insert(0, addon_dir)
 
-from bpy.props import StringProperty
 from bpy_extras.io_utils import ImportHelper
 from bpy.types import Context, Panel
 
