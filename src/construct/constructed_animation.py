@@ -25,10 +25,10 @@ class JointTransform:
 class Keyframe:
     """Represents a single keyframe in the animation.
     Attributes:
-        time: Time in seconds when this keyframe occurs
+        frame: Frame when this occurs
         joint_transforms: List of joint transforms for this keyframe
     """
-    time: float
+    frame_index: int
     joint_transforms: List[JointTransform]
 
 @dataclass(init=False)
@@ -36,22 +36,17 @@ class ConstructedAnimation:
     """Constructs animation data from MCH format for Blender import.
     Attributes:
         name: Name of the animation
-        duration: Duration of the animation in seconds
+        frame_count: Duration of the animation in seconds
         keyframes: List of keyframes containing joint transforms
     """
     name: str
-    duration: float
     keyframes: List[Keyframe]
 
     def __init__(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone]) -> None:
         """Initialize animation from formatted data."""
         self.name = formatted_animation.name
-        self.duration = self.calculate_duration(formatted_animation)
+        self.frame_count = formatted_animation.frame_count
         self.keyframes = self.construct_keyframes(formatted_animation, bones)
-
-    def calculate_duration(self, formatted_animation: FormattedAnimation) -> float:
-        """Calculate animation duration in seconds."""
-        return formatted_animation.frame_count / 30.0
 
     def euler_to_quaternion(self, x: float, y: float, z: float) -> Quaternion:
         """Convert XYZ Euler angles to quaternion in YXZ order"""
@@ -98,8 +93,6 @@ class ConstructedAnimation:
         keyframes: List[Keyframe] = []
         
         for frame_index, frame in enumerate(formatted_animation.frames):
-            time = frame_index / 30.0
-            
             # Calculate accumulated rotations for this frame (same pattern as skeleton)
             combined_rotations = self.calculate_accumulated_rotations(frame.poses, bones)
             
@@ -134,10 +127,10 @@ class ConstructedAnimation:
                 )
                 joint_transforms.append(transform)
             
-            keyframe = Keyframe(time=time, joint_transforms=joint_transforms)
+            keyframe = Keyframe(frame_index=frame_index, joint_transforms=joint_transforms)
             keyframes.append(keyframe)
         
         return keyframes
 
     def __repr__(self) -> str:
-        return f"ConstructedAnimation: {self.name} ({self.duration}s, {len(self.keyframes)} keyframes)"
+        return f"ConstructedAnimation: {self.name}, {len(self.keyframes)} keyframes)"

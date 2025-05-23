@@ -31,17 +31,13 @@ class BlenderAnimationExporter:
         
         if not animation_data.keyframes:
             return action
-            
-        # Create F-curves for all bones
+
         f_curves = self._create_f_curves(action, animation_data)
-        
-        # Add keyframes to the curves
+
         self._add_keyframes_to_curves(f_curves, animation_data)
-        
-        # Update all F-curves
+
         self._update_f_curves(f_curves)
-        
-        # Set action to use fake user to prevent deletion
+
         action.use_fake_user = True
         
         return action
@@ -85,7 +81,7 @@ class BlenderAnimationExporter:
     def _add_keyframes_to_curves(self, f_curves: Dict[str, BoneCurves], animation_data: ConstructedAnimation) -> None:
         """Adds keyframes to the F-curves"""
         for keyframe in animation_data.keyframes:
-            frame_number = int(round(keyframe.time * 30))
+            frame_number = keyframe.frame_index
             
             for transform in keyframe.joint_transforms:
                 bone_name = transform.bone_name
@@ -125,41 +121,25 @@ class BlenderAnimationExporter:
                     curve.update()
 
     def setup_keyframes(self, armature_obj: Object, animation_data: ConstructedAnimation, action: Action) -> None:
-        """
-        Sets up keyframes for the armature using the animation data
-        
-        Args:
-            armature_obj: The armature object to animate
-            animation_data: The animation data to use
-            action: The action to assign
-        """
-        # Ensure armature has animation data
         if not armature_obj.animation_data:
             armature_obj.animation_data_create()
             
-        # Assign the action
         armature_obj.animation_data.action = action
         
-        # Set the frame range
         if animation_data.keyframes:
-            last_keyframe = animation_data.keyframes[-1]
-            bpy.context.scene.frame_start = 0
-            bpy.context.scene.frame_end = int(last_keyframe.time * 30)  # Convert to frames (30 FPS)
+          last_keyframe = animation_data.keyframes[-1]
+          bpy.context.scene.frame_start = 0
+          bpy.context.scene.frame_end = animation_data.frame_count - 1
             
-        # Set rotation mode for all bones
         for bone in armature_obj.pose.bones:
             bone.rotation_mode = 'YXZ'
 
-        # Update the F-curves
         for fcurve in action.fcurves:
-            # Sort keyframes by time
             fcurve.keyframe_points.sort()
-            # Update handles
             for point in fcurve.keyframe_points:
                 point.handle_left_type = 'AUTO'
                 point.handle_right_type = 'AUTO'
-            # Update the curve
+
             fcurve.update()
             
-        # Ensure the action is active
         armature_obj.animation_data.action = action 
