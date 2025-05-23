@@ -36,6 +36,7 @@ class BlenderArmatureExporter:
               edit_bone.parent = armature.edit_bones[skeleton_data.bones[bone.parent].name]
               edit_bone.use_connect = True
 
+      armature.pose_position = 'POSE'
       
       # Exit edit mode
       bpy.ops.object.mode_set(mode='OBJECT')

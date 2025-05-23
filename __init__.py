@@ -1,10 +1,10 @@
 bl_info = {
-    "name": "CharOne Extractor",
+    "name": "CharaOne Extractor",
     "author": "Your Name",
     "version": (1, 0),
     "blender": (4, 3, 0),
-    "location": "File > Import > CharOne (.one)",
-    "description": "Import models from CharOne files",
+    "location": "File > Import > CharaOne (.one)",
+    "description": "Import models from CharaOne files",
     "warning": "",
     "doc_url": "",
     "category": "Import-Export",
@@ -28,7 +28,7 @@ from src.main import process_file
 
 class ImportCharOne(bpy.types.Operator, ImportHelper):
     """Import from CharaOne (.one)"""
-    bl_idname = "import.charaone"
+    bl_idname = "ff8tools.charaone"
     bl_label = "Import CharaOne"
     bl_options = {'REGISTER', 'UNDO'}
 

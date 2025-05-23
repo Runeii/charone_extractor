@@ -55,6 +55,9 @@ class ModelParser:
     textures: List[TIM] = []
 
     for offset in offsets:
+      if offset > len(data):
+        print(f"Offset {offset} is greater than data length {len(data)}")
+        continue
       tim = TIM(
         name=self.header.model_name,
         data=data[offset:]
