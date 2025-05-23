@@ -27,7 +27,7 @@ class BlenderExporter:
             textures=constructed_model.textures
         )
 
-        armature_obj = self.armature_exporter.create_armature(constructed_model.skeleton, "armature")
+        armature_obj = self.armature_exporter.create_armature(constructed_model.skeleton, constructed_model.name + "_armature")
 
         self.mesh_exporter.setup_vertex_groups(mesh_obj, constructed_model.skeleton)
         self.mesh_exporter.transform_mesh_vertices(mesh_obj, armature_obj, constructed_model.skeleton)
