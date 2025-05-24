@@ -18,7 +18,7 @@ class FormattedVertex:
   y: float
   z: float
 
-  def __init__(self, vertex: Vertex):
+  def __init__(self, vertex: Vertex, _scale: int):
     self.index = vertex.index
     self.x = self.sanitise_coord(vertex.x)
     self.y = self.sanitise_coord(vertex.y)

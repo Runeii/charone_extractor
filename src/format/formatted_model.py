@@ -18,6 +18,8 @@ from .animations.formatted_animation import FormattedAnimation
 @dataclass(init=False)
 class FormattedModel:
   name: str
+  scale: int
+
   textures: List[TIM]
 
   skin_objects: List[FormattedSkin]
@@ -28,8 +30,11 @@ class FormattedModel:
   faces: List[FormattedFace]
   vertices: List[FormattedVertex]
 
+
   def __init__(self, model: ModelParser):
-    self.name = model.header.model_name.replace("x", "")
+    self.name = model.header.model_name
+    self.scale = int(model.header.scale / 16)
+
     self.textures = model.textures
 
     self.texture_animations = model.model_data.texture_animations
@@ -48,7 +53,7 @@ class FormattedModel:
     return list(map(lambda bone : FormattedBone(bone), bones))
 
   def sanitise_vertices(self, vertices: List[Vertex]) -> List[FormattedVertex]:
-    return list(map(lambda vertex : FormattedVertex(vertex), vertices))
+    return list(map(lambda vertex : FormattedVertex(vertex, self.scale), vertices))
 
   def sanitise_faces(self, faces: List[Face]) -> List[FormattedFace]:
     return list(map(lambda face : FormattedFace(face), faces))
