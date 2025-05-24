@@ -8,6 +8,8 @@ class ModelHeader:
   model_offset: int = field(init=False)
   data_size: int = field(init=False)
   model_id: int = field(init=False)
+  unknown: int = field(init=False)
+  scale: int = field(init=False)
 
   is_main_field_model: bool = field(init=False)
   main_field_id: int = field(init=False)
@@ -19,18 +21,21 @@ class ModelHeader:
   def __init__(self, stream: BytesIO):
     self.model_offset = BinaryReader.read_uint32(stream)
     self.data_size = BinaryReader.read_uint32(stream)
-    self.model_id = BinaryReader.read_uint32(stream)
+    
+    flags = BinaryReader.read_uint32(stream)
 
     ## Sometimes there is a duplicate data size field
-    if self.data_size == self.model_id:
-      self.model_id = BinaryReader.read_uint32(stream)
+    if self.data_size == flags:
+      flags = BinaryReader.read_uint32(stream)
     
-    self.is_main_field_model = self.model_id >> 24 == 0xd0
+    self.is_main_field_model = (flags >> 24) & 0xFF == 208
+    self.scale = (flags >> 8) & 0xFFFF
+    self.model_id = flags & 0xFF
 
     self.tim_offsets = []
 
     if self.is_main_field_model:
-      self.main_field_id = BinaryReader.read_uint32(stream)
+      _main_model_spacer = BinaryReader.read_uint32(stream)
     else:
       if (self.model_id & 0xFFFFFF) == 0:
         self.tim_offsets.append(0)
@@ -43,9 +48,7 @@ class ModelHeader:
       
       self.model_data_offset = BinaryReader.read_uint32(stream)
     
-    self.model_name = BinaryReader.read_string(stream)
-    ## NOTE: We typically keep all data manipulation out of the parse stage.
-    ## But in this case bad model names are common and we need them to find MCH files
-    self.model_name = self.model_name[:4]
+    string_bytes = BinaryReader.read_bytes(stream, 8)
+    self.model_name = string_bytes.decode('ascii', errors='ignore').rstrip('\x00').strip()
 
-    _spacer = BinaryReader.read_uint32(stream)
+    _spacer2 = BinaryReader.read_uint32(stream)
