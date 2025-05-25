@@ -98,7 +98,7 @@ class BlenderExporter:
 
         self.mesh_exporter.setup_vertex_groups(mesh_obj, constructed_model.skeleton)
         self.mesh_exporter.transform_mesh_vertices(mesh_obj, armature_obj, constructed_model.skeleton)
-        
+          
         self.scene_exporter.link_objects([mesh_obj, armature_obj])        # Set up parent-child relationship and armature modifier
         self.scene_exporter.setup_parent_child(armature_obj, mesh_obj)
         self.scene_exporter.setup_armature_modifier(mesh_obj, armature_obj)

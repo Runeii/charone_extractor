@@ -49,6 +49,6 @@ class ModelHeader:
       self.model_data_offset = BinaryReader.read_uint32(stream)
     
     string_bytes = BinaryReader.read_bytes(stream, 8)
-    self.model_name = string_bytes.decode('ascii', errors='ignore').rstrip('\x00').strip()
+    self.model_name = string_bytes.decode('ascii', errors='ignore').rstrip('\x00').strip()[:4]
 
     _spacer2 = BinaryReader.read_uint32(stream)
