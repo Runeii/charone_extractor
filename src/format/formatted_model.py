@@ -18,7 +18,7 @@ from .animations.formatted_animation import FormattedAnimation
 @dataclass(init=False)
 class FormattedModel:
   name: str
-  scale: int
+  scale: float
 
   textures: List[TIM]
 
@@ -33,7 +33,7 @@ class FormattedModel:
 
   def __init__(self, model: ModelParser):
     self.name = model.header.model_name
-    self.scale = int(model.header.scale / 16)
+    self.scale = model.header.scale / 16 if model.header.scale != 0 else 1
 
     self.textures = model.textures
 
