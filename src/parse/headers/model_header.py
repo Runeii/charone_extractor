@@ -21,16 +21,16 @@ class ModelHeader:
   def __init__(self, stream: BytesIO):
     self.model_offset = BinaryReader.read_uint32(stream)
     self.data_size = BinaryReader.read_uint32(stream)
-    
     flags = BinaryReader.read_uint32(stream)
-
+  
     ## Sometimes there is a duplicate data size field
     if self.data_size == flags:
       flags = BinaryReader.read_uint32(stream)
     
-    self.is_main_field_model = (flags >> 24) & 0xFF == 208
-    self.scale = (flags >> 8) & 0xFFFF
     self.model_id = flags & 0xFF
+    _ = (flags >> 8) & 0xFF
+    self.scale = (flags >> 16) & 0xFF
+    self.is_main_field_model = (flags >> 24) & 0xFF == 208
 
     self.tim_offsets = []
 
