@@ -8,6 +8,7 @@ from src.construct.constructed_mesh import ConstructedMesh
 from src.construct.constructed_skeleton import ConstructedSkeleton
 from src.parse.model.tim import TIM
 from .texture import BlenderTextureExporter
+from math import radians
 
 class BlenderMeshExporter:
 		"""Handles creation and setup of Blender meshes"""
@@ -94,6 +95,13 @@ class BlenderMeshExporter:
 						for i, face in enumerate(mesh.polygons):
 								formatted_face = mesh_data.formatted_faces[i]
 								face.material_index = formatted_face.texture_index
+				
+				# Rotate entire mesh to match the model's orientation
+				obj.rotation_euler = (0, 0, radians(90))
+				bpy.context.view_layer.update()
+
+				bpy.context.view_layer.objects.active = obj
+				bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 
 				return obj
 

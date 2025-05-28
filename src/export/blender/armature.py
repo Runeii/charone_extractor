@@ -1,7 +1,6 @@
 import bpy
 from bpy.types import Object
 from mathutils import Vector
-from math import radians
 
 from src.construct.constructed_skeleton import ConstructedSkeleton
 
@@ -29,7 +28,6 @@ class BlenderArmatureExporter:
           # Set bone positions
           edit_bone.head = Vector(bone.head)
           edit_bone.tail = Vector(bone.tail)
-          edit_bone.roll -= radians(90.0)
 
           # Set parent if exists
           if bone.parent is not None:
