@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, List, Tuple
 from io import BytesIO
 from src.utils.binary_reader import BinaryReader
 
@@ -30,6 +30,7 @@ class TIM:
     header: TIMHeader = field(init=False)
     image_data: bytes = field(init=False)
     palette_data: Optional[bytes] = field(init=False)
+    palette_colors: Optional[List[Tuple[float, float, float, float]]] = field(init=False)  # RGBA colors
 
 
     MAGIC_NUMBER = b'\x10\x00\x00\x00'
@@ -105,6 +106,22 @@ class TIM:
                 
             # Read palette data
             palette_data = self.stream.read(pal_size - 12)
+            
+            # Parse palette colors with proper alpha handling
+            self.palette_colors = []
+            for i in range(0, len(palette_data), 2):
+                if i + 1 >= len(palette_data):
+                    break
+                    
+                word = palette_data[i] | (palette_data[i+1] << 8)
+                
+                # Extract BGR555 components
+                b = ((word >> 10) & 0x1F) / 31.0
+                g = ((word >>  5) & 0x1F) / 31.0
+                r = ( word        & 0x1F) / 31.0
+                a = 0.0 if (word >> 15) else 1.0
+                
+                self.palette_colors.append((r, g, b, a))
 
         # Read image header
         img_size = BinaryReader.read_uint32(self.stream)

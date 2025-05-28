@@ -8,6 +8,7 @@ from src.construct.constructed_mesh import ConstructedMesh
 from src.construct.constructed_skeleton import ConstructedSkeleton
 from src.parse.model.tim import TIM
 from .texture import BlenderTextureExporter
+from math import radians
 
 class BlenderMeshExporter:
 		"""Handles creation and setup of Blender meshes"""
@@ -78,16 +79,29 @@ class BlenderMeshExporter:
 				bmesh.update_edit_mesh(mesh)
 				bpy.ops.object.mode_set(mode='OBJECT')
 
-				# Create and assign material with textures
+				# Create and assign materials with textures
 				if textures:
 						# Create textures
 						blender_images = self.texture_exporter.create_textures(textures, model_name)
+						
+						# Create materials
+						materials = self.texture_exporter.create_materials(model_name, blender_images)
+						
+						# Add all materials to the mesh
+						for material in materials:
+								obj.data.materials.append(material)
+						
+						# Assign materials to faces based on texture index
+						for i, face in enumerate(mesh.polygons):
+								formatted_face = mesh_data.formatted_faces[i]
+								face.material_index = formatted_face.texture_index
+				
+				# Rotate entire mesh to match the model's orientation
+				obj.rotation_euler = (0, 0, radians(90))
+				bpy.context.view_layer.update()
 
-						# Create material
-						material = self.texture_exporter.create_material(model_name, blender_images)
-
-						# Assign material to mesh
-						obj.data.materials.append(material)
+				bpy.context.view_layer.objects.active = obj
+				bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 
 				return obj
 

@@ -42,7 +42,7 @@ class ConstructedMesh:
                 vertex_idx = skin.first_vertex_index + i
                 if vertex_idx < len(formatted_vertices):
                     vertex = formatted_vertices[vertex_idx]
-                    reordered_vertices.append({"x": vertex.x, "y": vertex.y, "z": vertex.z})
+                    reordered_vertices.append({"x": -vertex.x, "y": vertex.y, "z": vertex.z})
         
         return reordered_vertices
 
