@@ -17,6 +17,9 @@ class MCHHeader:
 
     while True:
       offset = BinaryReader.read_uint32(stream)
+      if offset == 268435712: 
+        self.tim_offsets.append(256)
+        continue
       if offset == 4294967295: 
         break
       
