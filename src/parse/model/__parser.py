@@ -11,17 +11,19 @@ class ModelParser:
   model_data: ModelData = field(init=False)
   textures: List[TIM] = field(init=False)
 
-  def __init__(self, header: ModelHeader, data: bytes):
+  def __init__(self, header: ModelHeader, data: bytes, mch_model_file_path: str):
     self.header = header
 
     if header.is_main_field_model:
-      self.parse_main_character_model(name=header.model_name, char_one_data=data[header.model_offset + 4:])
+      self.parse_main_character_model(
+        mch_model_file_path=mch_model_file_path,
+        char_one_data=data[header.model_offset + 4:],
+      )
     else:
       self.parse_non_main_character_model(data)
 
-  def parse_main_character_model(self, name: str, char_one_data: bytes):
-    sanitised_name = name.replace("x", "")
-    with open(f"./INPUT/{sanitised_name}.mch", "rb") as f:
+  def parse_main_character_model(self, mch_model_file_path: str, char_one_data: bytes):
+    with open(mch_model_file_path, "rb") as f:
       data = f.read()
 
     mch_header = MCHHeader(data[:256])
