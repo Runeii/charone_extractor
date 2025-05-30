@@ -63,71 +63,10 @@ def process_file(filepath: str) -> None:
 
         bpy.app.debug_value = 2
         bpy.ops.export_scene.gltf(
-            filepath="/Users/andrew/Desktop/FF8/process/OUTPUT/bases/" + model_name + ".gltf",
-            export_format="GLTF_SEPARATE",  # Export as .glb format
-            use_selection=False,  # Export only selected objects (meshes/armatures)
-            export_apply=True,  # Apply all transforms to the exported objects
-            export_animations=True,  # Include animations in export
-            export_force_sampling=True,  # Bake animations for compatibility
+            filepath="/Users/andrew/Desktop/FF8/process/OUTPUT/complete/" + map_name + "/" + model_name + ".gltf",
+            export_format="GLTF_SEPARATE",
+            use_selection=False,
+            export_apply=True,
+            export_animations=True,
+            export_force_sampling=True,
         )
-        
-        # Handle the GLTF file as JSON
-        # Rename .gltf to .json
-        gltf_path = "/Users/andrew/Desktop/FF8/process/OUTPUT/bases/" + model_name + ".gltf"
-        json_path = "/Users/andrew/Desktop/FF8/process/OUTPUT/bases/" + model_name + ".json"
-        shutil.move(gltf_path, json_path)
-        
-        # Read and modify JSON
-        with open(json_path, 'r') as f:
-            gltf_data = json.load(f)
-        
-        # Keep only first animation and simplify it
-        if 'animations' in gltf_data and len(gltf_data['animations']) > 0:
-            first_anim = gltf_data['animations'][0]
-            first_anim['name'] = 'placeholder'
-            if 'channels' in first_anim:
-                first_anim['channels'] = [first_anim['channels'][0]]
-            if 'samplers' in first_anim:
-                first_anim['samplers'] = [first_anim['samplers'][0]]
-            gltf_data['animations'] = [first_anim]
-        else:
-            gltf_data['animations'] = []
-        
-        # Save modified JSON
-        with open(json_path, 'w') as f:
-            json.dump(gltf_data, f, indent=2)
-        
-        # Rename back to .gltf
-        shutil.move(json_path, gltf_path)
-        
-        bpy.ops.export_scene.gltf(
-            filepath="/Users/andrew/Desktop/FF8/process/OUTPUT/animations/" + model_name + "_" + map_name + ".gltf",
-            export_format="GLTF_SEPARATE",  # Export as .glb format
-            use_selection=False,  # Export only selected objects (meshes/armatures)
-            export_apply=True,  # Apply all transforms to the exported objects
-            export_animations=True,  # Include animations in export
-            export_force_sampling=True,  # Bake animations for compatibility
-        )
-        
-        # Handle the animations GLTF file as JSON
-        anim_gltf_path = "/Users/andrew/Desktop/FF8/process/OUTPUT/animations/" + model_name + "_" + map_name + ".gltf"
-        anim_json_path = "/Users/andrew/Desktop/FF8/process/OUTPUT/animations/" + model_name + "_" + map_name + ".json"
-        shutil.move(anim_gltf_path, anim_json_path)
-        
-        # Read and modify JSON
-        with open(anim_json_path, 'r') as f:
-            anim_data = json.load(f)
-        
-        # Keep only the animations key
-        if 'animations' in anim_data:
-            anim_data = {'animations': anim_data['animations']}
-        else:
-            anim_data = {'animations': []}
-        
-        # Save modified JSON
-        with open(anim_json_path, 'w') as f:
-            json.dump(anim_data, f, indent=2)
-        
-        # Rename back to .gltf
-        shutil.move(anim_json_path, anim_gltf_path)
-        
