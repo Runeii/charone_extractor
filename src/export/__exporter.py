@@ -1,4 +1,3 @@
-from typing import Tuple
 from bpy.types import Object
 import bpy
 from src.construct.__constructor import ConstructedModel 
@@ -22,7 +21,14 @@ class BlenderExporter:
       self.scene_exporter = BlenderSceneExporter()
       self.transformer = BlenderTransforms()
         
-    def export(self, constructed_model: ConstructedModel, index: int) -> Tuple[Object, Object]:
+    def export(self, constructed_model: ConstructedModel, index: int, folder_index: int):
+        # Check if objects with same names already exist
+        mesh_name = constructed_model.name
+        armature_name = constructed_model.name + "_armature"
+        
+        if bpy.data.objects.get(mesh_name) or bpy.data.objects.get(armature_name):
+            return None, None
+            
         mesh_obj = self.mesh_exporter.create_mesh(
             mesh_data=constructed_model.meshes[0],
             model_name=constructed_model.name,
@@ -43,10 +49,13 @@ class BlenderExporter:
             action = self.animation_exporter.create_animation_data(animation_data)
             self.animation_exporter.setup_keyframes(armature_obj, animation_data, action)
 
-        self.transformer.apply_orientation_fix(armature_obj, mesh_obj, index)
+        # We need to perform the next step using the POSE rest animations
+        armature_obj.data.pose_position    = 'POSE'
+        armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_0"] 
+        self.transformer.apply_orientation_fix(armature_obj, mesh_obj, index, folder_index)
         self.setViewPreferences(armature_obj)
-        
-        return mesh_obj, armature_obj 
+
+        armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_1"] 
       
     def setViewPreferences(self, armature_obj: Object):
       armature_obj.data.pose_position    = 'POSE'
