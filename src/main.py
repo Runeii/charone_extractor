@@ -27,8 +27,9 @@ def process_file(filepath: str) -> None:
     # Get the directory of the input file
     file_directory = os.path.dirname(filepath)
 
-    for _, model_header in enumerate(model_headers.model_headers):
+    for index, model_header in enumerate(model_headers.model_headers):
         model_name = model_header.model_name
+        
         print(f"Processing model {model_name}")
         
         # Check if a file with model name exists in the same folder
@@ -49,5 +50,7 @@ def process_file(filepath: str) -> None:
         constructed_model = ConstructedModel(formatted_model=formatted_model)
         print(f"Model {constructed_model.name} constructed successfully")
         
-        blender_exporter.export(constructed_model)
+        blender_exporter.export(constructed_model, index)
+        
         print(f"Model {constructed_model.name} exported to Blender successfully")
+        
