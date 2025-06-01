@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from src.parse.headers.__parser import HeaderParser
 from src.parse.model.__parser import ModelParser
@@ -18,8 +19,12 @@ def process_file(filepath: str) -> None:
     with open(filepath, "rb") as f:
         file_data = f.read()
 
-    model_headers = HeaderParser(file_data)
-    print(f"Found {model_headers.model_count} models")
+    file_header = HeaderParser(file_data)
+    if file_header.model_count == 0:
+      print("Didn't find any models, skipping file")
+      return
+    
+    print(f"Found {file_header.model_count} models")
 
     # Initialize Blender exporter
     blender_exporter = BlenderExporter()
@@ -27,9 +32,9 @@ def process_file(filepath: str) -> None:
     # Get the directory of the input file
     file_directory = os.path.dirname(filepath)
 
-    for index, model_header in enumerate(model_headers.model_headers):
+    for index, model_header in enumerate(file_header.model_headers):
         model_name = model_header.model_name
-        
+
         print(f"Processing model {model_name}")
         
         # Check if a file with model name exists in the same folder
@@ -50,7 +55,7 @@ def process_file(filepath: str) -> None:
         constructed_model = ConstructedModel(formatted_model=formatted_model)
         print(f"Model {constructed_model.name} constructed successfully")
         
-        blender_exporter.export(constructed_model, index)
+        blender_exporter.export(constructed_model)
         
         print(f"Model {constructed_model.name} exported to Blender successfully")
         

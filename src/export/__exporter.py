@@ -21,7 +21,7 @@ class BlenderExporter:
       self.scene_exporter = BlenderSceneExporter()
       self.transformer = BlenderTransforms()
         
-    def export(self, constructed_model: ConstructedModel, index: int, folder_index: int):
+    def export(self, constructed_model: ConstructedModel):
         # Check if objects with same names already exist
         mesh_name = constructed_model.name
         armature_name = constructed_model.name + "_armature"
@@ -52,11 +52,9 @@ class BlenderExporter:
         # We need to perform the next step using the POSE rest animations
         armature_obj.data.pose_position    = 'POSE'
         armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_0"] 
-        self.transformer.apply_orientation_fix(armature_obj, mesh_obj, index, folder_index)
+        self.transformer.apply_orientation_fix(armature_obj, mesh_obj)
         self.setViewPreferences(armature_obj)
 
-        armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_1"] 
-      
     def setViewPreferences(self, armature_obj: Object):
       armature_obj.data.pose_position    = 'POSE'
 

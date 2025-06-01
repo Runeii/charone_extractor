@@ -60,11 +60,15 @@ class ModelParser:
       if offset > len(data):
         print(f"Offset {offset} is greater than data length {len(data)}")
         continue
-      tim = TIM(
-        name=self.header.model_name,
-        data=data[offset:]
-      )
 
-      textures.append(tim)
+      try:
+        tim = TIM(
+          name=self.header.model_name,
+          data=data[offset:]
+        )
+
+        textures.append(tim)
+      except ValueError as e:
+        print(f"!!! Failed to parse TIM at offset {offset} for model {self.header.model_name}: {e}. Offset is invalid", offset)
     
     return textures

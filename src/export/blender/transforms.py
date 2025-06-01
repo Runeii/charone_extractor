@@ -4,7 +4,7 @@ from math import radians
 from mathutils import Euler, Vector
 
 class BlenderTransforms:
-  def apply_orientation_fix(self, armature_obj: Object, mesh_object: Object, index: int, folder_index: int):
+  def apply_orientation_fix(self, armature_obj: Object, mesh_object: Object):
     # Create empty parent
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     parent_fix = bpy.context.active_object
@@ -17,7 +17,7 @@ class BlenderTransforms:
 
     # Default orientation fix
     parent_fix.rotation_euler = self.special_orientation_fixes(mesh_object)
-    parent_fix.location = (folder_index, index, 0)
+    parent_fix.location = (0, 0, 0)
     
     # Parent armature to the fix
     armature_obj.parent = parent_fix
