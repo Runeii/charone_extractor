@@ -134,8 +134,10 @@ class BlenderAnimationExporter:
         
         if animation_data.keyframes:
             # Set frame range for this action
-            action.frame_range = (0, animation_data.frame_count - 1)
-            
+            action.frame_range = (0, animation_data.frame_count)
+        
+        action.use_frame_range = True
+        
         for bone in armature_obj.pose.bones:
             bone.rotation_mode = 'YXZ'
 
@@ -147,4 +149,4 @@ class BlenderAnimationExporter:
 
             fcurve.update()
             
-        armature_obj.animation_data.action = action 
+        armature_obj.animation_data.action = action

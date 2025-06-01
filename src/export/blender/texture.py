@@ -74,7 +74,7 @@ class BlenderTextureExporter:
             # Create texture node
             texture_node = nodes.new('ShaderNodeTexImage')
             texture_node.image = image
-            texture_node.extension = 'CLIP'
+            texture_node.extension = 'REPEAT'
             texture_node.location[0] = shader_node.location[0]-500
             texture_node.location[1] = shader_node.location[1]
             

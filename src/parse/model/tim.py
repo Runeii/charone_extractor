@@ -38,7 +38,10 @@ class TIM:
     def __post_init__(self):
         self.stream = BytesIO(self.data)
 
-        self.parse()
+        success = self.parse()
+
+        if not success:
+            raise ValueError(f"Failed to parse TIM data for {self.name}")
 
         if self.header.has_palette and self.palette_data is None:
             raise ValueError("Palette data is missing")
@@ -68,7 +71,7 @@ class TIM:
         if self.stream.read(4) != self.MAGIC_NUMBER:
             print("Invalid TIM magic number")
             return False
-            
+        
         # Read flags byte
         flags = ord(self.stream.read(1))
         bpp = flags & 0x03

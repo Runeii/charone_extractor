@@ -26,14 +26,22 @@ def process_file(filepath: str) -> None:
     with open(filepath, "rb") as f:
         file_data = f.read()
 
-    model_headers = HeaderParser(file_data)
-    print(f"Found {model_headers.model_count} models")
+    file_header = HeaderParser(file_data)
+    if file_header.model_count == 0:
+      print("Didn't find any models, skipping file")
+      return
+    
+    print(f"Found {file_header.model_count} models")
+
+    # Initialize Blender exporter
+    blender_exporter = BlenderExporter()
     
     # Get the directory of the input file
     file_directory = os.path.dirname(filepath)
 
-    for index, model_header in enumerate(model_headers.model_headers):
+    for index, model_header in enumerate(file_header.model_headers):
         model_name = model_header.model_name
+
         print(f"Processing model {model_name}")
 
         # Check if a file with model name exists in the same folder

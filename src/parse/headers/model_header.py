@@ -37,18 +37,21 @@ class ModelHeader:
     if self.is_main_field_model:
       _main_model_spacer = BinaryReader.read_uint32(stream)
     else:
-      if (self.model_id & 0xFFFFFF) == 0:
-        self.tim_offsets.append(0)
-      
+      self.tim_offsets.append(0)
       while stream.tell() < 0x800:
         tim_offset = BinaryReader.read_uint32(stream)
         if tim_offset == 0xFFFFFFFF:
           break
-        self.tim_offsets.append(tim_offset)
+        
+        if tim_offset < self.data_size:
+          self.tim_offsets.append(tim_offset);
+          continue
+
+        lower_uint16 = tim_offset & 0xFFFF
+        self.tim_offsets.append(lower_uint16)
       
       self.model_data_offset = BinaryReader.read_uint32(stream)
     
     string_bytes = BinaryReader.read_bytes(stream, 8)
     self.model_name = string_bytes.decode('ascii', errors='ignore').rstrip('\x00').strip()[:4]
-
     _spacer2 = BinaryReader.read_uint32(stream)
