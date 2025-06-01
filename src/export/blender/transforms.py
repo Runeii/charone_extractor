@@ -2,9 +2,10 @@ from bpy.types import Object
 import bpy
 from math import radians
 from mathutils import Euler, Vector
+from typing import Tuple, Union
 
 class BlenderTransforms:
-  def apply_orientation_fix(self, armature_obj: Object, mesh_object: Object):
+  def apply_orientation_fix(self, armature_obj: Object, mesh_object: Object) -> Object:
     # Create empty parent
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     parent_fix = bpy.context.active_object
@@ -14,10 +15,10 @@ class BlenderTransforms:
     
     parent_fix.name = f"{armature_obj.name}_OrientationFix"
     
-
     # Default orientation fix
-    parent_fix.rotation_euler = self.special_orientation_fixes(mesh_object)
-    parent_fix.location = (0, 0, 0)
+    rotation, transform = self.special_orientation_fixes(mesh_object)
+    parent_fix.rotation_euler = rotation
+    parent_fix.location = transform
     
     # Parent armature to the fix
     armature_obj.parent = parent_fix
@@ -27,14 +28,11 @@ class BlenderTransforms:
     
     return parent_fix
   
-  def special_orientation_fixes(self, mesh_object: Object):
+  def special_orientation_fixes(self, mesh_object: Object) -> Tuple[Euler, Vector]:
     name = mesh_object.name
 
     is_mesh_humanoid = name.startswith('d') or name.startswith('p')
-    
-    ## Return default orientation if not humanoid
-    if not is_mesh_humanoid:
-      return Euler((radians(90), 0, radians(-90)))
+
     
     # If mesh is humanoid, we want to work out the orientation adjustment needed. Use the width, height, and depth of the armature object.
     # The longest axis should be rotated to stand in the Z axis.
@@ -43,11 +41,18 @@ class BlenderTransforms:
   
     bbox_info = self.get_posed_mesh_bbox(mesh_object)
     
+    
+    ## Return default orientation if not humanoid
+    if not is_mesh_humanoid:
+      y_shift = bbox_info['min_coords'][1] < 0 ? bbox_info['min_coords'][1] * -1 : 0
+      print(f"Non-humanoid mesh {name} detected, using default orientation fix")
+      return (Euler((radians(90), 0, radians(-90))), Vector((0.0, 0.0, y_shift)))
+
     # Get dimensions from bbox_info
     width_x = bbox_info['width_x']
     width_y = bbox_info['width_y']
     width_z = bbox_info['width_z']
-    
+
     # Create list of dimensions with their corresponding axes
     dimensions = [
         (width_x, 'X'),
@@ -68,18 +73,23 @@ class BlenderTransforms:
     euler = Euler((0,0,0))
     
     # Get standing up straight
+    z_shift = 0.0
     if height_axis == 'Y':
       euler.x = radians(90)
+      z_shift = bbox_info['min_coords'][1] * -1
     elif height_axis == 'X':
       euler.y = radians(-90)
+      z_shift = bbox_info['min_coords'][0] * -1
     
     # Rotate to face camera
     euler.z = radians(-90)
-
-    return euler
+    
+    transform = Vector((0.0, 0.0, z_shift))
+    
+    return (euler, transform)
   
   
-  def get_posed_mesh_bbox(self, mesh_obj: Object) -> dict[str, tuple[float, float, float] | float]:
+  def get_posed_mesh_bbox(self, mesh_obj: Object) -> dict[str, Union[Tuple[float, float, float], float]]:
     """
     Get the bounding box of a posed/transformed mesh object in world space.
     
