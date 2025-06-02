@@ -40,7 +40,7 @@ from bpy_extras.io_utils import ImportHelper
 from bpy.types import Context, Panel
 
 # Import local modules
-from src.main import copy_chara_files, process_file
+from src.main import process_file
 
 class ImportCharOne(bpy.types.Operator, ImportHelper):
     """Import from CharaOne (.one)"""
@@ -52,8 +52,7 @@ class ImportCharOne(bpy.types.Operator, ImportHelper):
     filter_glob: StringProperty(default="*.one", options={'HIDDEN'})
 
     def execute(self, context: 'Context') -> set[str]:
-        #copy_chara_files()
-        process_file(self.filepath, 0)
+        process_file(self.filepath)
         return {'FINISHED'}
 
 def menu_func_import(self: 'Panel', context: 'Context') -> None:
