@@ -53,6 +53,7 @@ class BlenderExporter:
         armature_obj.data.pose_position    = 'POSE'
         armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_0"] 
         self.transformer.apply_orientation_fix(armature_obj, mesh_obj)
+        self.mesh_exporter.recalculate_normals(mesh_obj, armature_obj)
         self.setViewPreferences(armature_obj)
 
     def setViewPreferences(self, armature_obj: Object):
@@ -66,4 +67,3 @@ class BlenderExporter:
                   for space in area.spaces:
                       if space.type == 'VIEW_3D':
                           space.shading.type = 'MATERIAL'
-                          

@@ -158,3 +158,58 @@ class BlenderMeshExporter:
 
 										# Update vertex coordinates
 										vert.co = vert_pos
+
+		def recalculate_normals(self, obj: Object, armature_obj: Object):
+				print("Recalculating normals")
+				# Make sure it's selected and active
+				bpy.context.view_layer.objects.active = obj
+				obj.select_set(True)
+				
+				# Enter edit mode
+				bpy.ops.object.mode_set(mode='EDIT')
+				
+				# Select all faces
+				bpy.ops.mesh.select_all(action='SELECT')
+				
+				# First make faces planar
+				bpy.ops.mesh.face_make_planar()
+				
+				# Get the armature object (parent of the mesh)
+				armature = armature_obj
+				
+				# For each vertex group (bone), check if normals need to be flipped
+				for vgroup in obj.vertex_groups:
+						bone = armature.data.bones.get(vgroup.name)
+						if not bone:
+								continue
+						
+						# Get bone direction
+						bone_dir = (bone.tail - bone.head).normalized()
+						
+						# Select vertices in this group
+						for v in obj.data.vertices:
+								if vgroup.index in [g.group for g in v.groups]:
+										v.select = True
+						
+						# Get average normal of selected faces
+						bm = bmesh.from_edit_mesh(obj.data)
+						selected_faces = [f for f in bm.faces if f.select]
+						if not selected_faces:
+								continue
+						
+						avg_normal = sum((f.normal for f in selected_faces), Vector((0,0,0))) / len(selected_faces)
+						
+						# If normal is pointing towards bone, flip it
+						if avg_normal.dot(bone_dir) < 0:
+								bpy.ops.mesh.flip_normals()
+						
+						bmesh.update_edit_mesh(obj.data)
+				
+				print("Recalculated normals")
+
+				# Return to object mode
+				bpy.ops.object.mode_set(mode='OBJECT')
+				
+				# Update the mesh
+				obj.data.update()
+    
