@@ -6,7 +6,6 @@ from src.export.blender.mesh import BlenderMeshExporter
 from src.export.blender.armature import BlenderArmatureExporter
 from src.export.blender.animation import BlenderAnimationExporter
 from src.export.blender.scene import BlenderSceneExporter
-from src.export.blender.transforms import BlenderTransforms
 from src.export.blender.rest_pose import BlenderRestPoseExporter
 
 class BlenderExporter:
@@ -19,7 +18,6 @@ class BlenderExporter:
       self.armature_exporter = BlenderArmatureExporter()
       self.animation_exporter = BlenderAnimationExporter()
       self.scene_exporter = BlenderSceneExporter()
-      self.transformer = BlenderTransforms()
       self.rest_pose_exporter = BlenderRestPoseExporter()
 
     def reset_blender(self):

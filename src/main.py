@@ -76,3 +76,12 @@ def process_file(filepath: str) -> None:
             export_animations=True,
             export_force_sampling=True,
         )
+
+        bpy.ops.export_scene.gltf(
+            filepath="/Users/andrew/Desktop/FF8/process/OUTPUT/base/" + model_name + ".gltf",
+            export_format="GLTF_SEPARATE",
+            use_selection=False,
+            export_apply=True,
+            export_animations=True,
+            export_force_sampling=True,
+        )
