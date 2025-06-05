@@ -42,11 +42,12 @@ class ConstructedAnimation:
     name: str
     keyframes: List[Keyframe]
 
-    def __init__(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone]) -> None:
+    def __init__(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone], rest_pose_transforms: List[JointTransform] | None) -> None:
         """Initialize animation from formatted data."""
         self.name = formatted_animation.name
         self.frame_count = formatted_animation.frame_count
-        self.keyframes = self.construct_keyframes(formatted_animation, bones)
+
+        self.keyframes = self.construct_keyframes(formatted_animation, bones, rest_pose_transforms)
 
     def euler_to_quaternion(self, x: float, y: float, z: float) -> Quaternion:
         """Convert XYZ Euler angles to quaternion in YXZ order"""
@@ -57,7 +58,7 @@ class ConstructedAnimation:
         euler = Euler((rad_x, rad_y, rad_z), 'YXZ')
         return euler.to_quaternion()
 
-    def calculate_accumulated_rotations(self, frame_poses: List[BonePose], bones: List[ConstructedBone]) -> Dict[int, Quaternion]:
+    def calculate_accumulated_rotations(self, frame_poses: List[BonePose], bones: List[ConstructedBone], rest_pose_transforms: List[JointTransform] | None) -> Dict[int, Quaternion]:
         """Calculate accumulated rotations for all bones in this frame.
         
         Uses the same pattern as skeleton's combined_rotations calculation.
@@ -66,8 +67,19 @@ class ConstructedAnimation:
         
         for bone_index, pose in enumerate(frame_poses):
             # Convert pose to quaternion
-            bone_quaternion = self.euler_to_quaternion(pose.x, pose.y, pose.z)
-            
+            if rest_pose_transforms:
+              rest_quat = self.euler_to_quaternion(
+                  rest_pose_transforms[bone_index].rotation[0],
+                  rest_pose_transforms[bone_index].rotation[1], 
+                  rest_pose_transforms[bone_index].rotation[2]
+              )
+              current_quat = self.euler_to_quaternion(pose.x, pose.y, pose.z)
+              
+              # Calculate relative rotation: rest_inverse * current
+              bone_quaternion = rest_quat.conjugated() @ current_quat
+            else:
+                bone_quaternion = self.euler_to_quaternion(pose.x, pose.y, pose.z)
+                        
             # Root bone (special case)
             if bone_index == 0:
                 combined_rotations[bone_index] = bone_quaternion
@@ -88,13 +100,13 @@ class ConstructedAnimation:
                     
         return combined_rotations
 
-    def construct_keyframes(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone]) -> List[Keyframe]:
+    def construct_keyframes(self, formatted_animation: FormattedAnimation, bones: List[ConstructedBone], rest_pose_transforms: List[JointTransform] | None) -> List[Keyframe]:
         """Construct keyframes from animation data using quaternions for rotation handling."""
         keyframes: List[Keyframe] = []
         
         for frame_index, frame in enumerate(formatted_animation.frames):
             # Calculate accumulated rotations for this frame (same pattern as skeleton)
-            combined_rotations = self.calculate_accumulated_rotations(frame.poses, bones)
+            combined_rotations = self.calculate_accumulated_rotations(frame.poses, bones, rest_pose_transforms)
             
             # Build joint transforms for this frame
             joint_transforms: List[JointTransform] = []

@@ -1,6 +1,4 @@
 import os
-import shutil
-
 from src.parse.headers.__parser import HeaderParser
 from src.parse.model.__parser import ModelParser
 from src.format.formatted_model import FormattedModel
@@ -32,7 +30,7 @@ def process_file(filepath: str) -> None:
     # Get the directory of the input file
     file_directory = os.path.dirname(filepath)
 
-    for index, model_header in enumerate(file_header.model_headers):
+    for _, model_header in enumerate(file_header.model_headers):
         model_name = model_header.model_name
 
         print(f"Processing model {model_name}")
