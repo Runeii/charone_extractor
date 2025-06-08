@@ -11,15 +11,9 @@ class FormattedFrame:
   poses: List[BonePose]
 
   def __init__(self, original: Frame):
-    scaled_offset = self.scale_offset(original.coordinate_offset)
+    self.poses = self.construct_bone_poses(original.poses, original.coordinate_offset)
 
-    self.poses = self.construct_bone_poses(original.poses, scaled_offset)
-  
-  @staticmethod
-  def scale_offset(offset: List[int]):
-    return [int(x) / 256 for x in offset]
-
-  def construct_bone_poses(self, poses: List[Pose], root_offset: List[float]):
+  def construct_bone_poses(self, poses: List[Pose], root_offset: List[int]):
     parsed_poses: List[BonePose] = []
     for i, pose in enumerate(poses):
       if i == 0:
