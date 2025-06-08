@@ -97,7 +97,6 @@ class BlenderMeshExporter:
 								face.material_index = formatted_face.texture_index
 				
 				# Rotate entire mesh to match the model's orientation
-				obj.rotation_euler = (0, 0, radians(90))
 				bpy.context.view_layer.update()
 
 				bpy.context.view_layer.objects.active = obj
