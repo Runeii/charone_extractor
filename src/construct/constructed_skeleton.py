@@ -18,7 +18,7 @@ class ConstructedSkeleton:
 
         self.bones = self.construct_bones(formatted_model)
         self.calculate_bone_hierarchy()
-        self.calculate_bone_positions(formatted_model)
+        self.calculate_bone_positions()
         
     def construct_bones(self, formatted_model: FormattedModel) -> List[ConstructedBone]:
         formatted_bones = formatted_model.bones
@@ -42,7 +42,7 @@ class ConstructedSkeleton:
             parent = self.bones[current].parent
         return length
 
-    def calculate_bone_positions(self, formatted_model: FormattedModel) -> None:
+    def calculate_bone_positions(self) -> None:
       for i, bone in enumerate(self.bones):
           if i == 0:
               bone.head = [0.0, 0.0, 0.0]
