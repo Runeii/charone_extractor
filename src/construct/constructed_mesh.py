@@ -45,7 +45,7 @@ class ConstructedMesh:
                     reordered_vertices.append({
                         "x": vertex.x,
                         "y": vertex.z,
-                        "z": -vertex.y
+                        "z": vertex.y
                     })
         
         return reordered_vertices
