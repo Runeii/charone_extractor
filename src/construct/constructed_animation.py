@@ -129,8 +129,6 @@ class ConstructedAnimation:
                 location = None
                 if bone_index == 0 and isinstance(pose, RootBonePose):
                     location = pose.location
-                    location = [0.0, 0.0, 0.0]
-
                 transform = JointTransform(
                     bone_index=bone_index,
                     bone_name=bones[bone_index].name,
