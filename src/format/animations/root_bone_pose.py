@@ -13,14 +13,14 @@ class RootBonePose(BonePose):
     super().__init__(original=pose)
     
     self.location = [
-      self.scale_offset(
+      -self.scale_offset(
         self.handle_negative_bone_length(offset[0])
       ),
       self.scale_offset(
-        self.handle_negative_bone_length(offset[1])
+        self.handle_negative_bone_length(offset[2])
       ),
       self.scale_offset(
-        self.handle_negative_bone_length(offset[2])
+        self.handle_negative_bone_length(offset[1])
       )
     ]
   
