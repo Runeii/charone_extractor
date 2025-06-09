@@ -39,7 +39,6 @@ def process_file(filepath: str) -> None:
 
     for _, model_header in enumerate(file_header.model_headers):
         model_name = model_header.model_name
-
         print(f"Processing model {model_name}")
 
         # Check if a file with model name exists in the same folder
