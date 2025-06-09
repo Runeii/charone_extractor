@@ -74,7 +74,6 @@ class BlenderExporter:
           self.animation_exporter.setup_keyframes(target_armature_obj, animation_data, action)
 
         self.mesh_exporter.recalculate_normals(mesh_obj, target_armature_obj)
-        target_armature_obj.scale = (1, 1, -1)
         self.setViewPreferences(target_armature_obj)
 
 
