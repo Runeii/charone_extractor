@@ -97,6 +97,7 @@ class BlenderMeshExporter:
 								face.material_index = formatted_face.texture_index
 				
 				# Rotate entire mesh to match the model's orientation
+				obj.rotation_euler = (0, radians(90), 0)
 				bpy.context.view_layer.update()
 
 				bpy.context.view_layer.objects.active = obj
@@ -152,7 +153,6 @@ class BlenderMeshExporter:
 										bone_name = constructed_skeleton.bones[skin.bone_id].name
 										bone_head = Vector(armature_obj.data.bones[bone_name].head_local)
 
-										# Apply bone position
 										vert_pos += bone_head
 
 										# Update vertex coordinates
