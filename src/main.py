@@ -16,11 +16,6 @@ def process_file(filepath: str) -> None:
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"File {filepath} does not exist")
 
-    # Get map name from environment variable
-    map_name = os.environ.get("MAP_NAME")
-    if not map_name:
-        raise ValueError("MAP_NAME environment variable is not set")
-
     with open(filepath, "rb") as f:
         file_data = f.read()
 
@@ -41,6 +36,8 @@ def process_file(filepath: str) -> None:
         model_name = model_header.model_name
         print(f"Processing model {model_name}")
 
+        if model_name != 'd049' and model_name != 'p017' and model_name != 'd001' and model_name != 'p001':
+          continue
         # Check if a file with model name exists in the same folder
         mch_model_file_path = os.path.join(file_directory, f"{model_name}.mch")
         if (model_name.startswith('d') == True) and (os.path.exists(mch_model_file_path) == False):
@@ -61,6 +58,14 @@ def process_file(filepath: str) -> None:
         constructed_model = ConstructedModel(formatted_model=formatted_model)
         print(f"Model {constructed_model.name} constructed successfully")
         
+
+        # Get map name from environment variable
+        map_name = os.environ.get("MAP_NAME")
+        if not map_name:
+          blender_exporter = BlenderExporter(reset=False)
+          blender_exporter.export(constructed_model)
+          continue
+
         # Initialize Blender exporter
         blender_exporter = BlenderExporter()
         blender_exporter.export(constructed_model)
@@ -68,12 +73,13 @@ def process_file(filepath: str) -> None:
 
         bpy.app.debug_value = 2
         bpy.ops.export_scene.gltf(
-            filepath="/Users/andrew/Desktop/FF8/process/OUTPUT/complete/" + map_name + "/" + model_name + ".gltf",
+            filepath="/Users/andrew/repos/personal/portfolio/src/ReactRoot/ff8/public/models/complete/" + map_name + "/" + model_name + ".gltf",
             export_format="GLTF_SEPARATE",
             use_selection=False,
             export_apply=True,
             export_animations=True,
             export_force_sampling=True,
+            export_yup=False
         )
 
         bpy.ops.export_scene.gltf(
@@ -83,4 +89,5 @@ def process_file(filepath: str) -> None:
             export_apply=True,
             export_animations=True,
             export_force_sampling=True,
+            export_yup=False
         )

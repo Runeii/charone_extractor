@@ -1,6 +1,7 @@
 from bpy.types import Object
 import bpy
 from src.construct.__constructor import ConstructedModel 
+from math import radians
 
 from src.export.blender.mesh import BlenderMeshExporter
 from src.export.blender.armature import BlenderArmatureExporter
@@ -11,8 +12,9 @@ from src.export.blender.rest_pose import BlenderRestPoseExporter
 class BlenderExporter:
     """Main class for exporting constructed model data to Blender"""
     
-    def __init__(self):
-      self.reset_blender()
+    def __init__(self, reset=True):
+      if reset:
+        self.reset_blender()
         
       self.mesh_exporter = BlenderMeshExporter()
       self.armature_exporter = BlenderArmatureExporter()
@@ -123,7 +125,7 @@ class BlenderExporter:
         
         original_armature_obj.data.pose_position = 'POSE'
         original_armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_0"]
-        
+
         self.rest_pose_exporter.create_rest_pose_from_animation(mesh_obj, original_armature_obj, target_armature_obj)
 
         self.scene_exporter.link_objects([mesh_obj, target_armature_obj])

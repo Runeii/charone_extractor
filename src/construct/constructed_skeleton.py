@@ -48,7 +48,7 @@ class ConstructedSkeleton:
       for i, bone in enumerate(self.bones):
           if i == 0:
               bone.head = [0.0, 0.0, 0.0]
-              bone.length = -1.0
+              bone.length = -0.5
           else:
               if bone.parent is not None:
                   bone.head = self.bones[bone.parent].tail
