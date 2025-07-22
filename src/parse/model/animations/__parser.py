@@ -27,7 +27,7 @@ class AnimationsParser:
       animation_size = Animation.calculate_size(frame_count, bone_count)
       animation_data = stream.read(animation_size)
 
-      animation = Animation(f"{self.model_name}_action_{i}", frame_count, bone_count, animation_data)
+      animation = Animation(f"{self.model_name}_action_{f'{i:03}'}", frame_count, bone_count, animation_data)
       animations.append(animation)
     
     return animations

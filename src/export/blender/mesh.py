@@ -36,7 +36,7 @@ class BlenderMeshExporter:
 				bpy.context.scene.collection.objects.link(obj)
 
 				# Create mesh from vertices and faces
-				vertices = [(v["x"], v["y"], v["z"]) for v in mesh_data.vertices]
+				vertices = [(-v["x"], v["y"], v["z"]) for v in mesh_data.vertices]
 				faces = mesh_data.faces
 
 				mesh.from_pydata(vertices, [], faces)
@@ -97,7 +97,7 @@ class BlenderMeshExporter:
 								face.material_index = formatted_face.texture_index
 				
 				# Rotate entire mesh to match the model's orientation
-				obj.rotation_euler = (0, radians(90), 0)
+				obj.rotation_euler = (0, radians(-90), 0)
 				bpy.context.view_layer.update()
 
 				bpy.context.view_layer.objects.active = obj

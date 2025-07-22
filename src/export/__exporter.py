@@ -124,7 +124,7 @@ class BlenderExporter:
         )
         
         original_armature_obj.data.pose_position = 'POSE'
-        original_armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_0"]
+        original_armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_000"]
 
         self.rest_pose_exporter.create_rest_pose_from_animation(mesh_obj, original_armature_obj, target_armature_obj)
 
@@ -145,6 +145,69 @@ class BlenderExporter:
 
         self.mesh_exporter.recalculate_normals(mesh_obj, target_armature_obj)
         self.setViewPreferences(target_armature_obj)
+        
+        # Adjust center point from center of mesh to botto  m
+        self.adjust_center_point_to_bottom(mesh_obj, target_armature_obj)
+
+    def adjust_center_point_to_bottom(self, mesh_obj: Object, armature_obj: Object):
+        """
+        Adjust the center point of the mesh from center to bottom by shifting up by 50% of bounding box height
+        """
+        # Store current pose position
+        original_pose_position = armature_obj.data.pose_position
+        
+        armature_obj.data.pose_position = 'POSE'
+        armature_obj.animation_data.action = bpy.data.actions[mesh_obj.name + "_action_000"]
+        
+        # Update the scene to ensure REST mode is applied
+        bpy.context.view_layer.update()
+        
+        # Alternative approach: Use depsgraph to get evaluated mesh
+        import bmesh
+        
+        # Get the evaluated mesh (with all modifiers applied)
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        mesh_eval = mesh_obj.evaluated_get(depsgraph)
+        
+        # Create bmesh from evaluated mesh
+        bm = bmesh.new()
+        bm.from_mesh(mesh_eval.data)
+        
+        # Transform to world coordinates
+        bm.transform(mesh_eval.matrix_world)
+        
+        # Get Z coordinates from all vertices
+        z_coords = [vert.co.z for vert in bm.verts]
+        
+        # Clean up
+        bm.free()
+        
+        if z_coords:
+            min_z = min(z_coords)
+            max_z = max(z_coords)
+            center_z = (min_z + max_z) / 2.0
+            
+            # To move center point to bottom, we need to shift up by the distance 
+            # from current center to the bottom of the bounding box
+            shift_amount = center_z - min_z
+
+            # Apply to REST mode
+            armature_obj.data.pose_position = 'REST'
+            bpy.context.view_layer.update()
+            # Apply the shift to armature only
+            armature_obj.location.z += max(0, -min_z)
+            
+            print(f"Evaluated mesh Z-coordinates: min={min_z}, max={max_z}")
+            print(f"Center Z: {center_z}, Shift amount: {shift_amount}")
+        else:
+            print("No vertices found in mesh")
+        
+          
+        # Switch back to POSE mode
+        armature_obj.data.pose_position = original_pose_position
+        
+        # Update the scene
+        bpy.context.view_layer.update()
 
     def setViewPreferences(self, armature_obj: Object):
       armature_obj.data.pose_position    = 'POSE'
