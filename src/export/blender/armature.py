@@ -26,8 +26,8 @@ class BlenderArmatureExporter:
           edit_bone = armature.edit_bones.new(bone.name)
           
           # Set bone positions
-          edit_bone.head = Vector((-bone.head[0], bone.head[1], bone.head[2]))
-          edit_bone.tail = Vector((-bone.tail[0], bone.tail[1], bone.tail[2]))
+          edit_bone.head = Vector(bone.head)
+          edit_bone.tail = Vector(bone.tail)
 
           # Set parent if exists
           if bone.parent is not None:

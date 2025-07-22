@@ -73,7 +73,7 @@ class ConstructedAnimation:
                   rest_pose_transforms[bone_index].rotation[1], 
                   rest_pose_transforms[bone_index].rotation[2]
               )
-              current_quat = self.euler_to_quaternion(pose.x, -pose.y, -pose.z)
+              current_quat = self.euler_to_quaternion(pose.x, pose.y, pose.z)
               
               # Calculate relative rotation: rest_inverse * current
               bone_quaternion = rest_quat.conjugated() @ current_quat
