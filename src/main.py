@@ -168,6 +168,7 @@ def process_file(filepath: str) -> None:
     # Get the directory of the input file
     file_directory = os.path.dirname(filepath)
 
+    previous_tim_offset = None
     for _, model_header in enumerate(file_header.model_headers):
         model_name = model_header.model_name
         print(f"Processing model {model_name}")
@@ -181,7 +182,14 @@ def process_file(filepath: str) -> None:
           continue
         
         # Parse stage
-        model = ModelParser(header=model_header, data=file_data, mch_model_file_path=mch_model_file_path)
+        model = ModelParser(
+          header=model_header,
+          data=file_data,
+          mch_model_file_path=mch_model_file_path,
+          previous_tim_offset=previous_tim_offset
+        )
+
+        previous_tim_offset = model.successful_tim_offset if model.successful_tim_offset is not None else previous_tim_offset
         print(f"Model {model.header.model_name} parsed successfully")
         
         print("textures", len(model.textures))
@@ -193,8 +201,6 @@ def process_file(filepath: str) -> None:
         # Construct stage
         constructed_model = ConstructedModel(formatted_model=formatted_model)
         print(f"Model {constructed_model.name} constructed successfully")
-        
-
         # Get map name from environment variable
         map_name = os.environ.get("MAP_NAME")
         if not map_name:
@@ -209,8 +215,6 @@ def process_file(filepath: str) -> None:
         print(f"Model {constructed_model.name} exported to Blender successfully")
 
         output_folder = os.environ.get("OUTPUT_FOLDER", "output")
-        if not output_folder:
-            raise ValueError("OUTPUT_FOLDER environment variable not set")
         export_path_base = os.path.join(output_folder, "base")
         export_path_complete = os.path.join(output_folder, "complete")
 

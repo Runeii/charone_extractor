@@ -202,6 +202,15 @@ class BlenderExporter:
         else:
             print("No vertices found in mesh")
         
+        if bpy.context.object.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        # Make sure the armature is selected and active
+        bpy.context.view_layer.objects.active = armature_obj
+        armature_obj.select_set(True)
+
+        # Apply location, rotation, and scale to the armature object
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
           
         # Switch back to POSE mode
         armature_obj.data.pose_position = original_pose_position
