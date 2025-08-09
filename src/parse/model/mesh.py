@@ -4,7 +4,7 @@ from src.utils.binary_reader import BinaryReader
 from io import BytesIO
 
 @dataclass
-class UnknownDataObject:
+class Mesh:
   """A data structure for parsing unknown data related to skin objects, triangles, and quads.
   
   Structure:
@@ -46,7 +46,7 @@ class UnknownDataObject:
     self.unknown2 = list(stream.read(8))
 
   def __repr__(self):
-    return (f"UnknownDataObject(skinobject_start={self.start_skinobject_index}, "
+    return (f"Mesh(skinobject_start={self.start_skinobject_index}, "
             f"skinobject_count={self.skinobject_count}, "
             f"triangle_start={self.start_triangle_index}, "
             f"triangle_count={self.triangle_count}, "

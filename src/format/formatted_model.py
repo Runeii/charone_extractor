@@ -6,7 +6,7 @@ from src.parse.model.bone import Bone
 from src.parse.model.face import Face
 from src.parse.model.vertex import Vertex
 from src.parse.model.texture_animation import TextureAnimation
-from src.parse.model.unknown_data_object import UnknownDataObject
+from src.parse.model.mesh import Mesh
 from src.parse.model.animations.__parser import AnimationsParser
 from src.parse.model.skin_object import SkinObject
 
@@ -24,7 +24,7 @@ class FormattedModel:
 
   skin_objects: List[FormattedSkin]
   texture_animations: List[TextureAnimation]
-  unknown_data_objects: List[UnknownDataObject]
+  meshes: List[Mesh]
 
   bones: List[FormattedBone]
   faces: List[FormattedFace]
@@ -38,7 +38,7 @@ class FormattedModel:
     self.textures = model.textures
 
     self.texture_animations = model.model_data.texture_animations
-    self.unknown_data_objects = model.model_data.unknown_data_objects
+    self.meshes = model.model_data.meshes
     self.skin_objects = self.sanitise_skins(skins=model.model_data.skin_objects)
 
     self.bones = self.sanitise_bones(bones=model.model_data.bones)
