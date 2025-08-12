@@ -175,33 +175,35 @@ class BlenderExporter:
         
         # Transform to world coordinates
         bm.transform(mesh_eval.matrix_world)
-        
-        # Get Z coordinates from all vertices
+
+        # Get X and Z coordinates from all vertices
+        x_coords = [vert.co.x for vert in bm.verts]
         z_coords = [vert.co.z for vert in bm.verts]
         
         # Clean up
         bm.free()
-        
-        if z_coords:
-            min_z = min(z_coords)
-            max_z = max(z_coords)
-            center_z = (min_z + max_z) / 2.0
-            
-            # To move center point to bottom, we need to shift up by the distance 
-            # from current center to the bottom of the bounding box
-            shift_amount = center_z - min_z
 
-            # Apply to REST mode
-            armature_obj.data.pose_position = 'REST'
-            bpy.context.view_layer.update()
-            # Apply the shift to armature only
-            armature_obj.location.z += max(0, -min_z)
-            
-            print(f"Evaluated mesh Z-coordinates: min={min_z}, max={max_z}")
-            print(f"Center Z: {center_z}, Shift amount: {shift_amount}")
-        else:
-            print("No vertices found in mesh")
-        
+        min_z = min(z_coords)
+        max_z = max(z_coords)
+        center_z = (min_z + max_z) / 2.0
+        z_shift_amount = center_z - min_z
+
+        min_x = min(x_coords)
+        max_x = max(x_coords)
+        center_x = (min_x + max_x) / 2.0
+
+        # Apply to REST mode
+        armature_obj.data.pose_position = 'REST'
+        bpy.context.view_layer.update()
+        # Apply the shift to armature only
+        armature_obj.location.z += max(0, -min_z)
+        armature_obj.location.x -= center_x
+        print(f"Evaluated mesh Z-coordinates: min={min_z}, max={max_z}")
+        print(f"Center Z: {center_z}, Shift amount: {z_shift_amount}")
+
+        print(f"Evaluated mesh X-coordinates: min={min_x}, max={max_x}")
+        print(f"Center X: {center_x}")
+
         if bpy.context.object.mode != 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
 
