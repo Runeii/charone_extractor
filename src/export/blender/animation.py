@@ -12,22 +12,26 @@ class BoneCurves(TypedDict):
 class BlenderAnimationExporter:
     """Handles creation and setup of Blender animations"""
     
-    def create_animation_data(self, animation_data: ConstructedAnimation) -> Action:
+    def create_animation_data(self, animation_data: ConstructedAnimation, custom_name: str = None) -> Action:
         """
         Creates animation data blocks from the constructed animation data
         
         Args:
             animation_data: The constructed animation data
+            custom_name: Optional custom name for the action (if None, uses animation_data.name)
             
         Returns:
             bpy.types.Action: The created action
         """
+        # Use custom name if provided, otherwise use original name
+        action_name = custom_name if custom_name else animation_data.name
+        
         # Remove existing action if it exists
-        if animation_data.name in bpy.data.actions:
-            bpy.data.actions.remove(bpy.data.actions[animation_data.name])
+        if action_name in bpy.data.actions:
+            bpy.data.actions.remove(bpy.data.actions[action_name])
             
         # Create new action
-        action = bpy.data.actions.new(name=animation_data.name)
+        action = bpy.data.actions.new(name=action_name)
         
         if not animation_data.keyframes:
             return action

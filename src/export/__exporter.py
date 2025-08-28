@@ -149,6 +149,27 @@ class BlenderExporter:
         # Adjust center point from center of mesh to botto  m
         self.adjust_center_point_to_bottom(mesh_obj, target_armature_obj)
 
+    def export_animations(self, constructed_model: ConstructedModel, existing_armature_obj, map_name: str):
+        """
+        Export only animations to an existing armature (for merging scenario)
+        
+        Args:
+            constructed_model: The constructed model containing animations
+            existing_armature_obj: The existing armature to attach animations to
+            map_name: Map name for prefixing animation names
+        """
+        print(f"Exporting {len(constructed_model.animations)} animations with map prefix: {map_name}")
+        print(f"Existing armature: {existing_armature_obj.name}")
+        for animation_data in constructed_model.animations:
+            # Create prefixed animation name for merging
+            prefixed_name = f"{map_name}_{constructed_model.name}_{animation_data.name}"
+            print(f"Creating animation: {prefixed_name}")
+            
+            action = self.animation_exporter.create_animation_data(animation_data, custom_name=prefixed_name)
+            self.animation_exporter.setup_keyframes(existing_armature_obj, animation_data, action)
+            
+        print(f"Successfully exported {len(constructed_model.animations)} animations to existing armature")
+
     def adjust_center_point_to_bottom(self, mesh_obj: Object, armature_obj: Object):
         """
         Adjust the center point of the mesh from center to bottom by shifting up by 50% of bounding box height
@@ -157,6 +178,7 @@ class BlenderExporter:
         original_pose_position = armature_obj.data.pose_position
         
         armature_obj.data.pose_position = 'POSE'
+        
         armature_obj.animation_data.action = bpy.data.actions[mesh_obj.name + "_action_000"]
         
         # Update the scene to ensure REST mode is applied

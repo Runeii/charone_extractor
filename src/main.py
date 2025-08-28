@@ -1,9 +1,5 @@
 import os
 import bpy
-import glob
-import json
-import hashlib
-import shutil
 
 from src.parse.headers.__parser import HeaderParser
 from src.parse.model.__parser import ModelParser
@@ -11,137 +7,7 @@ from src.format.formatted_model import FormattedModel
 from src.construct.__constructor import ConstructedModel
 from src.export.__exporter import BlenderExporter
 
-def calculate_gltf_hash(gltf_path: str) -> str:
-    """Calculate SHA256 hash of GLTF file content
-    
-    Args:
-        gltf_path: Path to the GLTF file
-        
-    Returns:
-        First 8 characters of SHA256 hash
-    """
-    with open(gltf_path, 'rb') as f:
-        content = f.read()
-        hash_obj = hashlib.sha256(content)
-        return hash_obj.hexdigest()[:8]
-
-def update_gltf_index(map_name: str, model_name: str, filename: str, index_dir: str) -> None:
-    """Update the GLTF index file with the new filename
-    
-    Args:
-        map_name: Name of the map
-        model_name: Name of the model
-        filename: New filename with hash
-        index_dir: Directory to store the index file
-    """
-    index_path = os.path.join(index_dir, "gltf_index.json")
-    
-    # Load existing index or create new one
-    if os.path.exists(index_path):
-        with open(index_path, 'r') as f:
-            index = json.loads(f.read())
-    else:
-        index = {}
-    
-    # Initialize map entry if it doesn't exist
-    if map_name not in index:
-        index[map_name] = {}
-    
-    # Update model entry with filename
-    index[map_name][model_name] = os.path.basename(filename)
-    
-    # Save updated index
-    with open(index_path, 'w') as f:
-        json.dump(index, f, indent=2)
-
-def rename_gltf_with_hash(export_path: str, model_name: str, map_name: str) -> str:
-    """Rename GLTF file and its associated files with hash. If a file with the same hash already exists,
-    delete the current file instead of renaming it.
-    
-    Args:
-        gltf_path: Path to the GLTF file
-        map_name: Optional map name for logging
-        
-    Returns:
-        New path with hash, or empty string if file was deleted
-    """
-    gltf_path = export_path + "/complete/" + model_name + ".gltf"
-  
-    if not os.path.exists(gltf_path):
-        return gltf_path
-        
-    # Calculate hash
-    hash_str = calculate_gltf_hash(gltf_path)
-    
-    # Get directory and filename parts
-    directory = os.path.dirname(gltf_path)
-    filename = os.path.basename(gltf_path)
-    name_without_ext = os.path.splitext(filename)[0]
-    
-    # Create new filename with hash
-    new_name = f"{name_without_ext}_{hash_str}"
-    new_path = os.path.join(directory, new_name + ".gltf")
-    
-    # Create logs directory if it doesn't exist
-    logs_dir = os.path.join(os.path.dirname(directory), "logs")
-    os.makedirs(logs_dir, exist_ok=True)
-    log_file = os.path.join(logs_dir, "gltf_export.log")
-    
-    # Check if file with this hash already exists
-    existing_file = None
-    for file in os.listdir(directory):
-        if new_name in file and file.endswith('.gltf'):
-            existing_file = os.path.join(directory, file)
-            break
-            
-    if existing_file:
-        # Delete current file and its associated files
-        for current_file in os.listdir(directory):
-            if current_file.startswith(name_without_ext + "."):
-                try:
-                    os.remove(os.path.join(directory, current_file))
-                except OSError as e:
-                    print(f"Error deleting {current_file}: {e}")
-        
-        # Log the skip
-        with open(log_file, 'a') as f:
-            map_info = f" for {map_name}" if map_name else ""
-            f.write(f"Skipped matching filename{map_info}: {new_name}\n")
-            
-        # Update index with existing filename
-        if map_name:
-            update_gltf_index(map_name, name_without_ext, existing_file, export_path)
-        return ""
-    
-    # If no existing file with same hash, rename all associated files
-    for file in os.listdir(directory):
-        if file.startswith(name_without_ext + "."):
-            old_file = os.path.join(directory, file)
-            new_file = os.path.join(directory, file.replace(name_without_ext + ".", new_name + "."))
-            shutil.move(old_file, new_file)
-    
-    # Update bin filename reference in GLTF file
-    with open(new_path, 'r') as f:
-        gltf_data = json.loads(f.read())
-    
-    if 'buffers' in gltf_data:
-        for buffer in gltf_data['buffers']:
-            if 'uri' in buffer and buffer['uri'].endswith('.bin'):
-                buffer['uri'] = f"{new_name}.bin"
-    
-    with open(new_path, 'w') as f:
-        json.dump(gltf_data, f, indent=2)
-    
-    # Log the save
-    with open(log_file, 'a') as f:
-        map_info = f" for {map_name}" if map_name else ""
-        f.write(f"Saved filename{map_info}: {new_name}\n")
-    
-    # Update index with new filename
-    if map_name:
-        update_gltf_index(map_name, name_without_ext, new_path, export_path)
-            
-    return new_path
+# All hashing functions removed as requested - no more file hashing
 
 def process_file(filepath: str) -> None:
     """Process a CharOne file and import it into Blender
@@ -209,37 +75,79 @@ def process_file(filepath: str) -> None:
           blender_exporter.export(constructed_model)
           continue
 
-        # Initialize Blender exporter
+        # CRITICAL: Start each model with a fresh scene
+        print(f"Starting fresh scene for model {model_name}")
         blender_exporter = BlenderExporter()
-        blender_exporter.export(constructed_model)
-        print(f"Model {constructed_model.name} exported to Blender successfully")
-
+        blender_exporter.reset_blender()
+        
+        # Check if the complete Blend file already exists
         output_folder = os.environ.get("OUTPUT_FOLDER", "output")
-        export_path_base = os.path.join(output_folder, "base")
         export_path_complete = os.path.join(output_folder, "complete")
+        complete_blend_path = os.path.join(export_path_complete, f"{model_name}.blend")
+        file_exists = os.path.exists(complete_blend_path)
+        
+        print(f"Checking for existing file: {complete_blend_path}")
+        print(f"File exists: {file_exists}")
 
-        bpy.app.debug_value = 2
-        bpy.ops.export_scene.gltf(
-            filepath=export_path_complete + "/" + model_name + ".gltf",
-            export_format="GLTF_SEPARATE",
-            use_selection=False,
-            export_apply=True,
-            export_animations=True,
-            export_force_sampling=True,
-            export_yup=False
-        )
-        print(f"Model {constructed_model.name} exported to GLTF successfully at {export_path_complete}/{model_name}.gltf")
+        if file_exists:
+            print(f"File exists - merging animations with map prefix: {map_name}")
+            # Load existing Blend file
+            bpy.ops.wm.open_mainfile(filepath=complete_blend_path)
+            
+            # Find the existing armature in the loaded scene
+            existing_armature_obj = None
+            for obj in bpy.context.scene.objects:
+                if obj.type == 'ARMATURE' and model_name in obj.name:
+                    existing_armature_obj = obj
+                    break
+            
+            if not existing_armature_obj:
+                print(f"Error: Could not find armature for model {model_name} in existing file")
+                continue
+                
+            # Use animation-only export with existing blender_exporter
+            blender_exporter.export_animations(constructed_model, existing_armature_obj, map_name)
+        else:
+            print("File doesn't exist - creating initial export with original animation names")
+            # Use full export with existing blender_exporter (scene already reset)
+            blender_exporter.export(constructed_model)  # Use original animation names for initial export
+            print(f"Model {constructed_model.name} exported to Blender successfully")
 
-        bpy.ops.export_scene.gltf(
-            filepath=export_path_base + "/" + model_name + ".gltf",
-            export_format="GLTF_SEPARATE",
-            use_selection=False,
-            export_apply=True,
-            export_animations=True,
-            export_force_sampling=True,
-            export_yup=False
-        )
-        print(f"Model {constructed_model.name} exported to base GLTF successfully at {export_path_base}/{model_name}.gltf")
+        # Animation naming is now handled in the BlenderExporter.export() method
+        # with proper map name prefixing to prevent conflicts between different maps
 
-        # Add hash to complete GLTF file
-        rename_gltf_with_hash(output_folder, model_name, map_name)
+        export_path_base = os.path.join(output_folder, "base")
+
+        # Save as Blender file to preserve all animation data perfectly
+        # This will overwrite any existing file
+        bpy.ops.wm.save_as_mainfile(filepath=complete_blend_path)
+        print(f"Model {constructed_model.name} saved to Blend file successfully at {complete_blend_path}")
+        
+        if file_exists:
+            print(f"Overwritten existing file with merged animations")
+        else:
+            print(f"Created new file with initial animations")
+
+        # No more hashing - files are saved with simple names
+        
+
+        print(f"Clearing scene after initial export of model {model_name}")
+        bpy.ops.object.select_all(action='SELECT')
+        bpy.ops.object.delete(use_global=False)
+        
+        # Also clear any remaining data
+        # Note: bpy.data collections don't have .clear() method, need to remove items individually
+        for action in list(bpy.data.actions):
+            bpy.data.actions.remove(action)
+        for mesh in list(bpy.data.meshes):
+            bpy.data.meshes.remove(mesh)
+        for armature in list(bpy.data.armatures):
+            bpy.data.armatures.remove(armature)
+        for material in list(bpy.data.materials):
+            bpy.data.materials.remove(material)
+        for image in list(bpy.data.images):
+            bpy.data.images.remove(image)
+        for texture in list(bpy.data.textures):
+            bpy.data.textures.remove(texture)
+        
+        print(f"Scene cleared, ready for next model")
