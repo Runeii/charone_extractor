@@ -197,7 +197,7 @@ class BlenderExporter:
         bpy.context.view_layer.update()
         # Apply the shift to armature only
         armature_obj.location.z += max(0, -min_z)
-        armature_obj.location.x -= center_x
+        #armature_obj.location.x -= center_x
         print(f"Evaluated mesh Z-coordinates: min={min_z}, max={max_z}")
         print(f"Center Z: {center_z}, Shift amount: {z_shift_amount}")
 
