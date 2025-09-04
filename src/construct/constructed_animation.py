@@ -4,6 +4,8 @@ from src.format.animations.formatted_animation import FormattedAnimation
 from ..format.animations.root_bone_pose import RootBonePose
 from ..format.animations.bone_pose import BonePose
 import math
+import hashlib
+import json
 from mathutils import Euler, Quaternion
 from .constructed_bone import ConstructedBone
 
@@ -141,6 +143,42 @@ class ConstructedAnimation:
             keyframes.append(keyframe)
         
         return keyframes
+
+    def get_data_hash(self) -> str:
+        """Generate a SHA256 hash of the animation data for deduplication.
+        
+        Returns:
+            str: Hexadecimal hash string of the animation data
+        """
+        # Create a deterministic representation of the animation data
+        animation_data = {
+            "frame_count": self.frame_count,
+            "keyframes": []
+        }
+        
+        for keyframe in self.keyframes:
+            keyframe_data = {
+                "frame_index": keyframe.frame_index,
+                "joint_transforms": []
+            }
+            
+            for transform in keyframe.joint_transforms:
+                transform_data = {
+                    "bone_index": transform.bone_index,
+                    "bone_name": transform.bone_name,
+                    "rotation": [round(r, 6) for r in transform.rotation],  # Round to 6 decimals for consistency
+                    "location": [round(l, 6) for l in transform.location] if transform.location else None
+                }
+                keyframe_data["joint_transforms"].append(transform_data)
+            
+            animation_data["keyframes"].append(keyframe_data)
+        
+        # Convert to JSON string for consistent hash generation
+        json_string = json.dumps(animation_data, sort_keys=True, separators=(',', ':'))
+        
+        # Generate SHA256 hash
+        hash_object = hashlib.sha256(json_string.encode('utf-8'))
+        return hash_object.hexdigest()
 
     def __repr__(self) -> str:
         return f"ConstructedAnimation: {self.name}, {len(self.keyframes)} keyframes)"

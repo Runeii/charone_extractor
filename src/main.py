@@ -6,6 +6,7 @@ from src.parse.model.__parser import ModelParser
 from src.format.formatted_model import FormattedModel
 from src.construct.__constructor import ConstructedModel
 from src.export.__exporter import BlenderExporter
+from src.utils.animation_hash_manager import AnimationHashManager
 
 # All hashing functions removed as requested - no more file hashing
 
@@ -89,6 +90,9 @@ def process_file(filepath: str) -> None:
         print(f"Checking for existing file: {complete_blend_path}")
         print(f"File exists: {file_exists}")
 
+        # Initialize animation hash manager
+        animation_manager = AnimationHashManager(output_folder)
+
         if file_exists:
             print(f"File exists - merging animations with map prefix: {map_name}")
             # Load existing Blend file
@@ -105,21 +109,22 @@ def process_file(filepath: str) -> None:
                 print(f"Error: Could not find armature for model {model_name} in existing file")
                 continue
                 
-            # Use animation-only export with existing blender_exporter
-            blender_exporter.export_animations(constructed_model, existing_armature_obj, map_name)
+            # Get animation hashes and update JSON tracking
+            animation_hashes: List[str] = []
+            for animation in constructed_model.animations:
+                animation.name = "ignore"
+                animation_hash = animation_manager.get_animation_hash(animation)
+                animation_hashes.append(animation_hash)
+                animation_manager.add_animation_to_model(map_name, model_name, animation_hash)
+            
+            # Use animation export with map-prefixed names
+            blender_exporter.export_animations(constructed_model, existing_armature_obj, animation_hashes)
         else:
             print("File doesn't exist - creating initial export with original animation names")
             # Use full export with existing blender_exporter (scene already reset)
             blender_exporter.export(constructed_model)  # Use original animation names for initial export
             print(f"Model {constructed_model.name} exported to Blender successfully")
-
-        # Animation naming is now handled in the BlenderExporter.export() method
-        # with proper map name prefixing to prevent conflicts between different maps
-
-        export_path_base = os.path.join(output_folder, "base")
-
         # Save as Blender file to preserve all animation data perfectly
-        # This will overwrite any existing file
         bpy.ops.wm.save_as_mainfile(filepath=complete_blend_path)
         print(f"Model {constructed_model.name} saved to Blend file successfully at {complete_blend_path}")
         
@@ -127,8 +132,6 @@ def process_file(filepath: str) -> None:
             print(f"Overwritten existing file with merged animations")
         else:
             print(f"Created new file with initial animations")
-
-        # No more hashing - files are saved with simple names
         
 
         print(f"Clearing scene after initial export of model {model_name}")

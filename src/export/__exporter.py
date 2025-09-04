@@ -1,7 +1,7 @@
 from bpy.types import Object
 import bpy
+from typing import List
 from src.construct.__constructor import ConstructedModel 
-from math import radians
 
 from src.export.blender.mesh import BlenderMeshExporter
 from src.export.blender.armature import BlenderArmatureExporter
@@ -149,23 +149,23 @@ class BlenderExporter:
         # Adjust center point from center of mesh to botto  m
         self.adjust_center_point_to_bottom(mesh_obj, target_armature_obj)
 
-    def export_animations(self, constructed_model: ConstructedModel, existing_armature_obj, map_name: str):
+    def export_animations(self, constructed_model: ConstructedModel, existing_armature_obj, animation_names: List[str]):
         """
-        Export only animations to an existing armature (for merging scenario)
+        Export animations to an existing armature using provided names
         
         Args:
             constructed_model: The constructed model containing animations
             existing_armature_obj: The existing armature to attach animations to
-            map_name: Map name for prefixing animation names
+            animation_names: List of names to use for each animation (same order as constructed_model.animations)
         """
-        print(f"Exporting {len(constructed_model.animations)} animations with map prefix: {map_name}")
-        print(f"Existing armature: {existing_armature_obj.name}")
-        for animation_data in constructed_model.animations:
-            # Create prefixed animation name for merging
-            prefixed_name = f"{map_name}_{constructed_model.name}_{animation_data.name}"
-            print(f"Creating animation: {prefixed_name}")
+        print(f"Exporting {len(constructed_model.animations)} animations")
+        print(f"Animation names: {animation_names}")
+
+        for i, animation_data in enumerate(constructed_model.animations):
+            animation_name = animation_names[i]
+            print(f"Creating animation: {animation_name}")
             
-            action = self.animation_exporter.create_animation_data(animation_data, custom_name=prefixed_name)
+            action = self.animation_exporter.create_animation_data(animation_data, custom_name=animation_name)
             self.animation_exporter.setup_keyframes(existing_armature_obj, animation_data, action)
             
         print(f"Successfully exported {len(constructed_model.animations)} animations to existing armature")
