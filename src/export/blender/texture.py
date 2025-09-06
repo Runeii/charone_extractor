@@ -29,6 +29,10 @@ class BlenderTextureExporter:
           # Set image pixels using foreach_set for efficiency and type safety
           image.pixels.foreach_set(list(pixels))
           image.use_fake_user = True  # Keep image in memory
+          
+          # Pack the image data into the blend file to ensure it persists when saved
+          image.pack()
+          
           blender_images.append(image)
             
         return blender_images
