@@ -145,9 +145,6 @@ class BlenderExporter:
 
         self.mesh_exporter.recalculate_normals(mesh_obj, target_armature_obj)
         self.setViewPreferences(target_armature_obj)
-        
-        # Adjust center point from center of mesh to botto  m
-        self.adjust_center_point_to_bottom(mesh_obj, target_armature_obj)
 
     def adjust_center_point_to_bottom(self, mesh_obj: Object, armature_obj: Object):
         """
