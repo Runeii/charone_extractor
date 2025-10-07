@@ -18,7 +18,7 @@ class ConstructedSkeleton:
 
         self.bones = self.construct_bones(formatted_model)
         self.calculate_bone_hierarchy()
-        self.calculate_bone_positions(formatted_model)
+        self.calculate_bone_positions()
         
     def construct_bones(self, formatted_model: FormattedModel) -> List[ConstructedBone]:
         formatted_bones = formatted_model.bones
@@ -42,20 +42,21 @@ class ConstructedSkeleton:
             parent = self.bones[current].parent
         return length
 
-    def calculate_bone_positions(self, formatted_model: FormattedModel) -> None:
+    def calculate_bone_positions(self) -> None:
+      direction = Vector((0.0, 1.0, 0.0))
+
       for i, bone in enumerate(self.bones):
           if i == 0:
               bone.head = [0.0, 0.0, 0.0]
-              bone.length = Vector((0.0, 0.0, 0.0)).length
+              bone.length = -0.5
           else:
               if bone.parent is not None:
                   bone.head = self.bones[bone.parent].tail
               
-              direction = Vector((0.0, 0.0, 1.0))
-              scaled_length = bone.length / 256.0
-              
-              bone.tail = [
-                  bone.head[0] + direction.x * scaled_length,
-                  bone.head[1] + direction.y * scaled_length,
-                  bone.head[2] + direction.z * scaled_length
-              ]
+          scaled_length = bone.length / 256.0
+
+          bone.tail = [
+              bone.head[0] + direction.x * scaled_length,
+              bone.head[1] + direction.y * scaled_length,
+              bone.head[2] + direction.z * scaled_length
+          ]

@@ -24,10 +24,10 @@ class Frame:
 
     self.poses = self.parse_poses(self.bone_count, 6)
   
-  def parse_poses(self, number_of_poses: int, offset_of_poses: int):
+  def parse_poses(self, number_of_poses: int, offset_of_poses: int) -> List[Pose]:
     stream = BytesIO(self.data[offset_of_poses:])
-    poses = []
-    for i in range(number_of_poses):
+    poses: List[Pose] = []
+    for _ in range(number_of_poses):
       pose_data = stream.read(Pose.calculate_size())
       pose = Pose(pose_data)
       poses.append(pose)

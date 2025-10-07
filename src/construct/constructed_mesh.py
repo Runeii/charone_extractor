@@ -5,6 +5,7 @@ from src.format.formatted_vertex import FormattedVertex
 from src.format.formatted_skin import FormattedSkin
 from src.construct.constructed_skeleton import ConstructedSkeleton
 import math
+from src.parse.model.mesh import Mesh
 
 @dataclass(init=False)
 class ConstructedMesh:
@@ -12,15 +13,23 @@ class ConstructedMesh:
     uvs: List[Dict[str, float]]
     faces: List[List[int]]
     formatted_faces: List[FormattedFace]  # Store original formatted faces for UV mapping
+    filtered_skins: List[FormattedSkin]  # Store skins that belong to this mesh
     
-    def __init__(self, formatted_faces: List[FormattedFace], 
+    def __init__(self,
+                 mesh: Mesh,
+                 faces_start_offset: int,
+                 formatted_faces: List[FormattedFace], 
                  formatted_vertices: List[FormattedVertex],
                  skeleton: ConstructedSkeleton):
 
-        self.vertices = self.construct_vertices(formatted_vertices, skeleton.skins)
-        self.uvs = self.construct_uvs(formatted_faces)
-        self.faces = self.construct_faces(formatted_faces)
-        self.formatted_faces = formatted_faces  # Store the original formatted faces
+        filtered_faces = formatted_faces[faces_start_offset:faces_start_offset + mesh.triangle_count + mesh.quad_count]
+        filtered_skins = skeleton.skins[mesh.skinobject_start:mesh.skinobject_start + mesh.skinobject_count]
+
+        self.vertices = self.construct_vertices(formatted_vertices, filtered_skins)
+        self.uvs = self.construct_uvs(filtered_faces)
+        self.faces = self.construct_faces(filtered_faces)
+        self.formatted_faces = filtered_faces  # Store the original formatted faces
+        self.filtered_skins = filtered_skins  # Store the filtered skins for this mesh
 
     def construct_vertices(self, formatted_vertices: List[FormattedVertex], skins: List[FormattedSkin]) -> List[Dict[str, float]]:
         """Construct vertices from MCH format data, ordered by skin groups.
@@ -42,7 +51,11 @@ class ConstructedMesh:
                 vertex_idx = skin.first_vertex_index + i
                 if vertex_idx < len(formatted_vertices):
                     vertex = formatted_vertices[vertex_idx]
-                    reordered_vertices.append({"x": -vertex.x, "y": vertex.y, "z": vertex.z})
+                    reordered_vertices.append({
+                        "x": vertex.x,
+                        "y": vertex.z,
+                        "z": vertex.y
+                    })
         
         return reordered_vertices
 

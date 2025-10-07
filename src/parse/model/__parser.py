@@ -10,9 +10,11 @@ class ModelParser:
   header: ModelHeader
   model_data: ModelData = field(init=False)
   textures: List[TIM] = field(init=False)
+  successful_tim_offset: int | None = field(init=False, default=None)
 
-  def __init__(self, header: ModelHeader, data: bytes, mch_model_file_path: str):
+  def __init__(self, header: ModelHeader, data: bytes, mch_model_file_path: str, previous_tim_offset: int | None = None):
     self.header = header
+    self.previous_tim_offset = previous_tim_offset
 
     if header.is_main_field_model:
       self.parse_main_character_model(
@@ -50,8 +52,16 @@ class ModelParser:
         lambda tim_offset: self.header.model_offset + tim_offset + 4, self.header.tim_offsets
         )
     );
+    print(f"TIM offsets for model {self.header.model_name}: {tim_offsets}")
     
     self.textures = self.parse_textures(data, tim_offsets)
+    print(f"Parsed {len(self.textures)} textures for model {self.header.model_name}")
+    if len(self.textures) == 0 and self.previous_tim_offset is not None:
+      print(f"Using previous TIM offset {self.previous_tim_offset} for model {self.header.model_name}")
+      self.textures = self.parse_textures(data, [self.previous_tim_offset])
+      self.successful_tim_offset = self.previous_tim_offset
+    else:
+      self.successful_tim_offset = tim_offsets[0] if len(tim_offsets) > 0 else None
 
   def parse_textures(self, data: bytes, offsets: List[int]):
     textures: List[TIM] = []

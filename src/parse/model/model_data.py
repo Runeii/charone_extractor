@@ -4,7 +4,7 @@ from src.parse.model.face import Face
 from src.parse.model.bone import Bone
 from src.parse.model.vertex import Vertex
 from src.parse.model.skin_object import SkinObject
-from src.parse.model.unknown_data_object import UnknownDataObject
+from src.parse.model.mesh import Mesh
 from src.parse.model.texture_animation import TextureAnimation
 from io import BytesIO
 from src.parse.model.animations.__parser import AnimationsParser
@@ -23,7 +23,7 @@ class ModelData:
   faces: List[Face] = field(init=False)
   vertices: List[Vertex] = field(init=False)
   skin_objects: List[SkinObject] = field(init=False)
-  unknown_data_objects: List[UnknownDataObject] = field(init=False)
+  meshes: List[Mesh] = field(init=False)
 
   triangle_count: int = field(init=False)
   quad_count: int = field(init=False)
@@ -35,7 +35,7 @@ class ModelData:
     number_of_vertices = BinaryReader.read_uint32(stream)
     number_of_texture_animations = BinaryReader.read_uint32(stream)
     number_of_faces = BinaryReader.read_uint32(stream)
-    number_of_unknown_data_objects = BinaryReader.read_uint32(stream)
+    number_of_meshes = BinaryReader.read_uint32(stream)
     number_of_skin_objects = BinaryReader.read_uint32(stream)
 
     __unknown = BinaryReader.read_uint32(stream)
@@ -50,7 +50,7 @@ class ModelData:
     offset_of_vertices = BinaryReader.read_uint32(stream) + self.offset
     offset_of_texture_animations = BinaryReader.read_uint32(stream) + self.offset
     offset_of_faces = BinaryReader.read_uint32(stream) + self.offset
-    offset_of_unknown_data_objects = BinaryReader.read_uint32(stream) + self.offset
+    offset_of_meshes = BinaryReader.read_uint32(stream) + self.offset
     offset_of_skin_objects = BinaryReader.read_uint32(stream) + self.offset
     offset_of_animation_data = BinaryReader.read_uint32(stream) + self.offset
 
@@ -62,7 +62,7 @@ class ModelData:
     self.vertices = self.parse_vertices(number_of_vertices, offset_of_vertices)
     
     self.skin_objects = self.parse_skin_objects(number_of_skin_objects, offset_of_skin_objects)
-    self.unknown_data_objects = self.parse_unknown_data_objects(number_of_unknown_data_objects, offset_of_unknown_data_objects)
+    self.meshes = self.parse_meshes(number_of_meshes, offset_of_meshes)
 
     # When working with main character models, we're constructing the model data from a separate MCH file
     # Animations remain within the chara.one file.
@@ -120,12 +120,12 @@ class ModelData:
     
     return skin_objects
 
-  def parse_unknown_data_objects(self, number_of_unknown_data_objects: int, offset_of_unknown_data_objects: int) -> List[UnknownDataObject]:
-    stream = BytesIO(self.data[offset_of_unknown_data_objects:])
-    unknown_data_objects: List[UnknownDataObject] = []
-    for _ in range(number_of_unknown_data_objects):
-      unknown_data_object_data = stream.read(32)
-      unknown_data_object = UnknownDataObject(unknown_data_object_data)
-      unknown_data_objects.append(unknown_data_object)
+  def parse_meshes(self, number_of_meshes: int, offset_of_meshes: int) -> List[Mesh]:
+    stream = BytesIO(self.data[offset_of_meshes:])
+    meshes: List[Mesh] = []
+    for _ in range(number_of_meshes):
+      mesh_data = stream.read(32)
+      mesh = Mesh(mesh_data)
+      meshes.append(mesh)
     
-    return unknown_data_objects
+    return meshes
