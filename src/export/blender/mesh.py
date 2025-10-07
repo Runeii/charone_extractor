@@ -105,13 +105,14 @@ class BlenderMeshExporter:
 
 				return obj
 
-		def setup_vertex_groups(self, mesh_obj: Object, skeleton_data: ConstructedSkeleton) -> None:
+		def setup_vertex_groups(self, mesh_obj: Object, skeleton_data: ConstructedSkeleton, mesh_data: ConstructedMesh) -> None:
 				"""
 				Sets up vertex groups for the mesh based on skeleton data
 
 				Args:
 						mesh_obj: The mesh object to set up vertex groups for
 						skeleton_data: The skeleton data containing bone information
+						mesh_data: The constructed mesh data with filtered skins
 				"""
 				# Create vertex groups for each bone
 				for i, bone in enumerate(skeleton_data.bones):
@@ -122,41 +123,43 @@ class BlenderMeshExporter:
 						group.add(all_vertices, 0.0, 'REPLACE')
 
 						# Then set weight 1.0 for vertices that belong to this bone
-						for skin in skeleton_data.skins:
+						# Use the mesh-specific filtered skins instead of all skeleton skins
+						local_vertex_idx = 0
+						for skin in mesh_data.filtered_skins:
 								if skin.bone_id == i:  # This skin belongs to this bone
-										# Get the vertex range for this skin
-										start_idx = skin.first_vertex_index
-										end_idx = start_idx + skin.vertex_count - 1
-
-										# Add all vertices in this range with weight 1.0
-										vertices_in_range = [v_idx for v_idx in range(start_idx, end_idx + 1)
+										# Get the local vertex range for this skin within the current mesh
+										vertices_in_range = list(range(local_vertex_idx, local_vertex_idx + skin.vertex_count))
+										
+										# Ensure we don't exceed the mesh's vertex count
+										vertices_in_range = [v_idx for v_idx in vertices_in_range 
 																				if v_idx < len(mesh_obj.data.vertices)]
 
 										if vertices_in_range:
 												group.add(vertices_in_range, 1.0, 'REPLACE')
+								
+								# Move to next vertex group in the local mesh
+								local_vertex_idx += skin.vertex_count
 
 				# Limit each vertex to only belong to one vertex group
 				bpy.context.view_layer.objects.active = mesh_obj
 				bpy.ops.object.vertex_group_limit_total(limit=1)
 
-		def transform_mesh_vertices(self, mesh_obj: Object, armature_obj: Object, constructed_skeleton: ConstructedSkeleton) -> None:
-				# Process each vertex
-				for i, vert in enumerate(mesh_obj.data.vertices):
-						vert_pos = Vector(vert.co)
+		def transform_mesh_vertices(self, mesh_obj: Object, armature_obj: Object, constructed_skeleton: ConstructedSkeleton, mesh_data: ConstructedMesh) -> None:
+				local_vertex_idx = 0
+				
+				for skin in mesh_data.filtered_skins:
+						# Get the bone's rest position and rotation
+						bone_name = constructed_skeleton.bones[skin.bone_id].name
+						bone_head = Vector(armature_obj.data.bones[bone_name].head_local)
 
-						for skin in constructed_skeleton.skins:
-								min_idx = skin.first_vertex_index
-								max_idx = min_idx + skin.vertex_count - 1
-
-								if i >= min_idx and i <= max_idx:
-										# Get the bone's rest position and rotation
-										bone_name = constructed_skeleton.bones[skin.bone_id].name
-										bone_head = Vector(armature_obj.data.bones[bone_name].head_local)
-
+						for i in range(skin.vertex_count):
+								vertex_idx = local_vertex_idx + i
+								if vertex_idx < len(mesh_obj.data.vertices):
+										vert = mesh_obj.data.vertices[vertex_idx]
+										vert_pos = Vector(vert.co)
 										vert_pos += bone_head
-
-										# Update vertex coordinates
 										vert.co = vert_pos
+						local_vertex_idx += skin.vertex_count
 
 		def recalculate_normals(self, obj: Object, armature_obj: Object):
 				print("Recalculating normals")

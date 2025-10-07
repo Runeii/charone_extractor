@@ -1,16 +1,18 @@
 import bpy
 from bpy.types import Object
+from typing import List
 
 class BlenderRestPoseExporter:
-    def create_rest_pose_from_animation(self, mesh_obj: Object, source_armature_obj: Object, target_armature_obj: Object, frame_number: int = 1):
+    def create_rest_pose_from_all_meshes(self, mesh_objects: List[Object], source_armature_obj: Object, target_armature_obj: Object, frame_number: int = 1):
         # Store original frame
         original_frame = bpy.context.scene.frame_current
         
         # Capture pose transforms from SOURCE armature (the one with animation)
         pose_transforms = self.capture_pose_transforms(source_armature_obj, frame_number)
         
-        # Apply current mesh deformation as rest
-        self.apply_current_mesh_deformation_as_rest(mesh_obj, source_armature_obj)
+        # Apply current mesh deformation as rest for ALL meshes
+        for mesh_obj in mesh_objects:
+            self.apply_current_mesh_deformation_as_rest(mesh_obj, source_armature_obj)
         
         # Apply transforms as new rest pose to TARGET armature
         self.apply_transforms_as_rest_pose(target_armature_obj, pose_transforms)

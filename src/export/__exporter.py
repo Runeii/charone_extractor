@@ -98,25 +98,10 @@ class BlenderExporter:
         
         if bpy.data.objects.get(mesh_name) or bpy.data.objects.get(armature_name):
             return None, None
-            
-        mesh_obj = self.mesh_exporter.create_mesh(
-            mesh_data=constructed_model.meshes[0],
-            model_name=constructed_model.name,
-            textures=constructed_model.textures
-        )
         
         original_armature_obj = self.armature_exporter.create_armature(constructed_model.skeleton, constructed_model.name + "_original_armature")
-
-        self.mesh_exporter.setup_vertex_groups(mesh_obj, constructed_model.skeleton)
-        self.mesh_exporter.transform_mesh_vertices(mesh_obj, original_armature_obj, constructed_model.skeleton)
-        
-        self.scene_exporter.link_objects([mesh_obj, original_armature_obj])
-        self.scene_exporter.setup_parent_child(original_armature_obj, mesh_obj)
-        self.scene_exporter.setup_armature_modifier(mesh_obj, original_armature_obj)
-        
         action = self.animation_exporter.create_animation_data(constructed_model.rest_animation)
         self.animation_exporter.setup_keyframes(original_armature_obj, constructed_model.rest_animation, action)
-        
         # Setup target armature
         target_armature_obj = self.armature_exporter.create_armature(
             constructed_model.skeleton, 
@@ -126,11 +111,29 @@ class BlenderExporter:
         original_armature_obj.data.pose_position = 'POSE'
         original_armature_obj.animation_data.action = bpy.data.actions[mesh_name + "_action_000"]
 
-        self.rest_pose_exporter.create_rest_pose_from_animation(mesh_obj, original_armature_obj, target_armature_obj)
+        mesh_objs: list[Object] = []
+        for i, mesh in enumerate(constructed_model.meshes):
+          print(f"Creating mesh {i} for model {constructed_model.name}, {len(constructed_model.meshes)} total meshes")
+          mesh_obj = self.mesh_exporter.create_mesh(
+              mesh_data=mesh,
+              model_name=constructed_model.name + "_mesh_" + str(i),
+              textures=constructed_model.textures
+          )
 
-        self.scene_exporter.link_objects([mesh_obj, target_armature_obj])
-        self.scene_exporter.setup_parent_child(target_armature_obj, mesh_obj)
-        self.scene_exporter.setup_armature_modifier(mesh_obj, target_armature_obj)
+          self.mesh_exporter.setup_vertex_groups(mesh_obj, constructed_model.skeleton, mesh)
+          self.mesh_exporter.transform_mesh_vertices(mesh_obj, original_armature_obj, constructed_model.skeleton, mesh)
+
+          self.scene_exporter.link_objects([mesh_obj, original_armature_obj])
+          self.scene_exporter.setup_parent_child(original_armature_obj, mesh_obj)
+          self.scene_exporter.setup_armature_modifier(mesh_obj, original_armature_obj)
+          mesh_objs.append(mesh_obj)
+
+        self.rest_pose_exporter.create_rest_pose_from_all_meshes(mesh_objs, original_armature_obj, target_armature_obj)
+        for mesh_obj in mesh_objs:
+          self.scene_exporter.link_objects([mesh_obj, target_armature_obj])
+          self.scene_exporter.setup_parent_child(target_armature_obj, mesh_obj)
+          self.scene_exporter.setup_armature_modifier(mesh_obj, target_armature_obj)
+
 
         # Clean up original armature
         for action in bpy.data.actions:
@@ -143,7 +146,6 @@ class BlenderExporter:
           action = self.animation_exporter.create_animation_data(animation_data)
           self.animation_exporter.setup_keyframes(target_armature_obj, animation_data, action)
 
-        self.mesh_exporter.recalculate_normals(mesh_obj, target_armature_obj)
         self.setViewPreferences(target_armature_obj)
 
     def adjust_center_point_to_bottom(self, mesh_obj: Object, armature_obj: Object):

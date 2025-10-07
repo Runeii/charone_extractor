@@ -4,7 +4,7 @@ from src.utils.binary_reader import BinaryReader
 from io import BytesIO
 
 @dataclass
-class UnknownDataObject:
+class Mesh:
   """A data structure for parsing unknown data related to skin objects, triangles, and quads.
   
   Structure:
@@ -19,7 +19,7 @@ class UnknownDataObject:
   """
   data: bytes
 
-  start_skinobject_index: int = field(init=False)
+  skinobject_start: int = field(init=False)
   skinobject_count: int = field(init=False)
   start_triangle_index: int = field(init=False)
   triangle_count: int = field(init=False)
@@ -32,7 +32,7 @@ class UnknownDataObject:
     assert len(self.data) >= 8, f"Vertex data must be at least 8 bytes, got {len(self.data)}"
     stream = BytesIO(self.data)
 
-    self.start_skinobject_index = BinaryReader.read_uint16(stream)
+    self.skinobject_start = BinaryReader.read_uint16(stream)
     self.skinobject_count = BinaryReader.read_uint16(stream)
 
     self.unknown = list(stream.read(12))
@@ -46,7 +46,7 @@ class UnknownDataObject:
     self.unknown2 = list(stream.read(8))
 
   def __repr__(self):
-    return (f"UnknownDataObject(skinobject_start={self.start_skinobject_index}, "
+    return (f"Mesh(skinobject_start={self.skinobject_start}, "
             f"skinobject_count={self.skinobject_count}, "
             f"triangle_start={self.start_triangle_index}, "
             f"triangle_count={self.triangle_count}, "
