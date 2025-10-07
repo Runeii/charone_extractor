@@ -1,4 +1,4 @@
-Chara.one extractor
+A Blender plugin for importing the chara.one model file format used in Final Fantasy VIII to Blender, including all meshes and animations.
 
 ## To use
 1.  Add this folder to Blender addons folder
