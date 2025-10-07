@@ -26,11 +26,19 @@ class ConstructedModel:
         self.textures = formatted_model.textures
 
     def construct_meshes(self, formatted_model: FormattedModel) -> List[ConstructedMesh]:
-        return [ConstructedMesh(
-            formatted_faces=formatted_model.faces,
-            formatted_vertices=formatted_model.vertices,
-            skeleton=self.skeleton
-        )]
+      constructed_meshes: List[ConstructedMesh] = []
+      faces_start_offset = 0
+      for mesh in formatted_model.meshes:
+          constructed_mesh = ConstructedMesh(
+              mesh=mesh,
+              faces_start_offset=faces_start_offset,
+              formatted_faces=formatted_model.faces,
+              formatted_vertices=formatted_model.vertices,
+              skeleton=self.skeleton
+          )
+          faces_start_offset += mesh.triangle_count + mesh.quad_count
+          constructed_meshes.append(constructed_mesh)
+      return constructed_meshes
 
     def construct_skeleton(self, formatted_model: FormattedModel) -> ConstructedSkeleton:
         return ConstructedSkeleton(formatted_model=formatted_model)
