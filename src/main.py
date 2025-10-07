@@ -173,8 +173,6 @@ def process_file(filepath: str) -> None:
         model_name = model_header.model_name
         print(f"Processing model {model_name}")
 
-        if not model_name.startswith('n'):
-          continue
         # Check if a file with model name exists in the same folder
         mch_model_file_path = os.path.join(file_directory, f"{model_name}.mch")
         if (model_name.startswith('d') == True) and (os.path.exists(mch_model_file_path) == False):
