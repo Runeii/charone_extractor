@@ -113,8 +113,6 @@ class BlenderExporter:
 
         mesh_objs: list[Object] = []
         for i, mesh in enumerate(constructed_model.meshes):
-          if i == 0:
-            continue
           print(f"Creating mesh {i} for model {constructed_model.name}, {len(constructed_model.meshes)} total meshes")
           mesh_obj = self.mesh_exporter.create_mesh(
               mesh_data=mesh,
@@ -122,8 +120,8 @@ class BlenderExporter:
               textures=constructed_model.textures
           )
 
-          self.mesh_exporter.setup_vertex_groups(mesh_obj, constructed_model.skeleton)
-          self.mesh_exporter.transform_mesh_vertices(mesh_obj, original_armature_obj, constructed_model.skeleton)
+          self.mesh_exporter.setup_vertex_groups(mesh_obj, constructed_model.skeleton, mesh)
+          self.mesh_exporter.transform_mesh_vertices(mesh_obj, original_armature_obj, constructed_model.skeleton, mesh)
 
           self.scene_exporter.link_objects([mesh_obj, original_armature_obj])
           self.scene_exporter.setup_parent_child(original_armature_obj, mesh_obj)

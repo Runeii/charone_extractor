@@ -13,6 +13,7 @@ class ConstructedMesh:
     uvs: List[Dict[str, float]]
     faces: List[List[int]]
     formatted_faces: List[FormattedFace]  # Store original formatted faces for UV mapping
+    filtered_skins: List[FormattedSkin]  # Store skins that belong to this mesh
     
     def __init__(self,
                  mesh: Mesh,
@@ -21,14 +22,14 @@ class ConstructedMesh:
                  formatted_vertices: List[FormattedVertex],
                  skeleton: ConstructedSkeleton):
 
-        filtered_vertices = formatted_vertices
         filtered_faces = formatted_faces[faces_start_offset:faces_start_offset + mesh.triangle_count + mesh.quad_count]
         filtered_skins = skeleton.skins[mesh.skinobject_start:mesh.skinobject_start + mesh.skinobject_count]
 
-        self.vertices = self.construct_vertices(filtered_vertices, filtered_skins)
+        self.vertices = self.construct_vertices(formatted_vertices, filtered_skins)
         self.uvs = self.construct_uvs(filtered_faces)
         self.faces = self.construct_faces(filtered_faces)
         self.formatted_faces = filtered_faces  # Store the original formatted faces
+        self.filtered_skins = filtered_skins  # Store the filtered skins for this mesh
 
     def construct_vertices(self, formatted_vertices: List[FormattedVertex], skins: List[FormattedSkin]) -> List[Dict[str, float]]:
         """Construct vertices from MCH format data, ordered by skin groups.
