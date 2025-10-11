@@ -9,7 +9,6 @@ class ModelHeader:
   data_size: int = field(init=False)
   model_id: int = field(init=False)
   unknown: int = field(init=False)
-  scale: int = field(init=False)
 
   is_main_field_model: bool = field(init=False)
   main_field_id: int = field(init=False)
@@ -29,7 +28,7 @@ class ModelHeader:
     
     self.model_id = flags & 0xFF
     _ = (flags >> 8) & 0xFF
-    self.scale = (flags >> 16) & 0xFF
+    self.unknown = (flags >> 16) & 0xFF
     self.is_main_field_model = (flags >> 24) & 0xFF == 208
 
     self.tim_offsets = []

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from src.parse.model.vertex import Vertex
 
-MAX_SIZE = 4096
+MAX_SIZE = 32768
 
 @dataclass(init=False)
 class FormattedVertex:
@@ -18,12 +18,11 @@ class FormattedVertex:
   y: float
   z: float
 
-  def __init__(self, vertex: Vertex, _scale: int):
+  def __init__(self, vertex: Vertex, scale: int = 1):
     self.index = vertex.index
-    self.x = self.sanitise_coord(vertex.x)
-    self.y = self.sanitise_coord(vertex.y)
-    self.z = self.sanitise_coord(vertex.z)
-
+    self.x = self.sanitise_coord(vertex.x) / scale
+    self.y = self.sanitise_coord(vertex.y) / scale
+    self.z = self.sanitise_coord(vertex.z) / scale
 
   @staticmethod
   def sanitise_coord(value: float) -> float:

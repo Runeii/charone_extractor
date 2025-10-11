@@ -33,8 +33,6 @@ class FormattedModel:
 
   def __init__(self, model: ModelParser):
     self.name = model.header.model_name
-    self.scale = model.header.scale / 16 if model.header.scale != 0 else 1
-
     self.textures = model.textures
 
     self.texture_animations = model.model_data.texture_animations
@@ -53,7 +51,7 @@ class FormattedModel:
     return list(map(lambda bone : FormattedBone(bone), bones))
 
   def sanitise_vertices(self, vertices: List[Vertex]) -> List[FormattedVertex]:
-    return list(map(lambda vertex : FormattedVertex(vertex, self.scale), vertices))
+    return list(map(lambda vertex : FormattedVertex(vertex), vertices))
 
   def sanitise_faces(self, faces: List[Face]) -> List[FormattedFace]:
     return list(map(lambda face : FormattedFace(face), faces))
