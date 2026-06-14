@@ -129,6 +129,12 @@ class ConstructedAnimation:
                 location = None
                 if bone_index == 0 and isinstance(pose, RootBonePose):
                     location = pose.location
+                    # The rest pose already holds the root's base location, so store only the
+                    # offset from it here; using the absolute value would apply it twice.
+                    if rest_pose_transforms:
+                        base = rest_pose_transforms[bone_index].location
+                        if base is not None:
+                            location = [location[i] - base[i] for i in range(3)]
                 transform = JointTransform(
                     bone_index=bone_index,
                     bone_name=bones[bone_index].name,

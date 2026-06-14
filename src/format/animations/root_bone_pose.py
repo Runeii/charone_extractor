@@ -19,7 +19,9 @@ class RootBonePose(BonePose):
       -self.scale_offset(
         self.handle_negative_bone_length(offset[0])
       ),
-      0,
+      self.scale_offset(
+        self.handle_negative_bone_length(offset[2])
+      ),
     ]
   
   def handle_negative_bone_length(self, bone_length: int):
